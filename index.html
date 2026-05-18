@@ -12,21 +12,22 @@
             padding: 20px; 
             margin: 0;
         }
-        h1 { color: #1f2937; font-size: 24px; margin-bottom: 20px; }
+        h1 { color: #1f2937; font-size: 26px; margin-bottom: 20px; font-weight: 800; }
         
-        /* 24개 카드 그리드 배치 (모바일은 4칸, PC는 6칸) */
+        /* === 게임 화면 스타일 === */
+        #game-section { display: block; }
+        
         .grid-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
         }
         @media (min-width: 768px) {
-            .grid-container { grid-template-columns: repeat(6, 1fr); max-width: 800px; }
+            .grid-container { grid-template-columns: repeat(6, 1fr); max-width: 900px; }
         }
 
-        /* 카드 정사각형 유지 */
         .card {
             aspect-ratio: 1 / 1;
             perspective: 1000px;
@@ -50,26 +51,29 @@
             justify-content: center;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            font-size: 14px;
             font-weight: bold;
             padding: 8px;
             box-sizing: border-box;
             word-break: keep-all;
+            text-align: center;
+            line-height: 1.3;
         }
         
         /* 카드 앞면 (백운중 X) */
         .card-front {
             background-color: #3b82f6;
             color: white;
-            font-size: 16px;
+            font-size: 18px; /* 앞면 글씨 크기 */
         }
         
-        /* 카드 뒷면 (문제/정답) */
+        /* 카드 뒷면 (문제/정답) - 글씨 크기 키움! */
         .card-back {
             background-color: white;
             color: #1f2937;
             transform: rotateY(180deg);
             border: 3px solid #3b82f6;
+            font-size: 20px; /* 뒷면 글씨 크기 큼직하게 */
+            white-space: pre-line; /* 엔터키 적용되도록 설정 */
         }
         
         /* 짝을 맞췄을 때 (초록색) */
@@ -78,44 +82,101 @@
             color: white;
             border-color: #10b981;
         }
-        
-        /* 새 게임 버튼 */
-        button {
+
+        /* === 문제 수정 화면 스타일 === */
+        #edit-section { 
+            display: none; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .edit-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .edit-row span { font-weight: bold; width: 40px; }
+        .edit-row input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+        }
+
+        /* 버튼 스타일 */
+        .btn-group {
             margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        button {
             padding: 12px 24px;
             font-size: 16px;
             font-weight: bold;
-            background-color: #4f46e5;
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
         }
-        button:hover { background-color: #4338ca; }
+        .btn-primary { background-color: #4f46e5; }
+        .btn-primary:hover { background-color: #4338ca; }
+        .btn-secondary { background-color: #f59e0b; }
+        .btn-secondary:hover { background-color: #d97706; }
+        .btn-cancel { background-color: #6b7280; }
+        .btn-cancel:hover { background-color: #4b5563; }
+        .btn-save { background-color: #10b981; width: 100%; margin-top: 15px;}
+        .btn-save:hover { background-color: #059669; }
+        
+        .info-text { font-size: 14px; color: #6b7280; margin-bottom: 20px; }
+
     </style>
 </head>
 <body>
 
-    <h1>백운중 이차방정식 카드 뒤집기 (24장)</h1>
-    <div class="grid-container" id="game-board"></div>
-    <button onclick="startGame()">새 게임 시작하기 (섞기)</button>
+    <!-- 1. 게임 화면 -->
+    <div id="game-section">
+        <h1>백운중 이차방정식 카드 게임</h1>
+        <div class="grid-container" id="game-board"></div>
+        <div class="btn-group">
+            <button class="btn-primary" onclick="startGame()">새 게임 시작 (섞기)</button>
+            <button class="btn-secondary" onclick="openEditMode()">내 문제 직접 만들기 ✏️</button>
+        </div>
+    </div>
+
+    <!-- 2. 문제 수정 화면 -->
+    <div id="edit-section">
+        <h1>문제 직접 만들기 (12쌍)</h1>
+        <p class="info-text">식과 정답을 자유롭게 입력해보세요! 완료 후 게임이 바로 시작됩니다.</p>
+        <div id="edit-list"></div>
+        <button class="btn-save" onclick="saveAndStart()">✅ 저장하고 내 게임 시작하기</button>
+        <button class="btn-cancel" onclick="closeEditMode()" style="margin-top: 10px; width: 100%;">취소</button>
+    </div>
 
     <script>
-        // 12쌍(24개)의 이차방정식과 해답
-        const pairs = [
-            { q: "x² - 1 = 0", a: "x = 1<br>또는<br>x = -1" },
-            { q: "x² - 4 = 0", a: "x = 2<br>또는<br>x = -2" },
-            { q: "x² - 9 = 0", a: "x = 3<br>또는<br>x = -3" },
-            { q: "x² - 16 = 0", a: "x = 4<br>또는<br>x = -4" },
-            { q: "x² - 25 = 0", a: "x = 5<br>또는<br>x = -5" },
-            { q: "x² - 36 = 0", a: "x = 6<br>또는<br>x = -6" },
-            { q: "x² - 3x + 2 = 0", a: "x = 1<br>또는<br>x = 2" },
-            { q: "x² - 5x + 6 = 0", a: "x = 2<br>또는<br>x = 3" },
-            { q: "x² - x - 6 = 0", a: "x = -2<br>또는<br>x = 3" },
-            { q: "x² - 4x - 5 = 0", a: "x = -1<br>또는<br>x = 5" },
-            { q: "x² - 7x + 10 = 0", a: "x = 2<br>또는<br>x = 5" },
-            { q: "x² + 4x + 3 = 0", a: "x = -1<br>또는<br>x = -3" }
+        // 기본 12쌍의 이차방정식 (학생들이 수정 가능)
+        // \n 은 줄바꿈(엔터) 역할을 합니다.
+        let currentPairs = [
+            { q: "x² - 1 = 0", a: "x = 1\n또는\nx = -1" },
+            { q: "x² - 4 = 0", a: "x = 2\n또는\nx = -2" },
+            { q: "x² - 9 = 0", a: "x = 3\n또는\nx = -3" },
+            { q: "x² - 16 = 0", a: "x = 4\n또는\nx = -4" },
+            { q: "x² - 25 = 0", a: "x = 5\n또는\nx = -5" },
+            { q: "x² - 36 = 0", a: "x = 6\n또는\nx = -6" },
+            { q: "x² - 3x + 2 = 0", a: "x = 1\n또는\nx = 2" },
+            { q: "x² - 5x + 6 = 0", a: "x = 2\n또는\nx = 3" },
+            { q: "x² - x - 6 = 0", a: "x = -2\n또는\nx = 3" },
+            { q: "x² - 4x - 5 = 0", a: "x = -1\n또는\nx = 5" },
+            { q: "x² - 7x + 10 = 0", a: "x = 2\n또는\nx = 5" },
+            { q: "x² + 4x + 3 = 0", a: "x = -1\n또는\nx = -3" }
         ];
 
         let cards = [];
@@ -124,23 +185,24 @@
         let lockBoard = false;
         let matchCount = 0;
 
+        // 게임 시작 함수
         function startGame() {
             const board = document.getElementById('game-board');
             board.innerHTML = '';
             cards = [];
             matchCount = 0;
             
-            // 짝꿍 데이터 만들기
+            // 12쌍 데이터를 바탕으로 24개 카드 생성
             let idCounter = 0;
-            pairs.forEach((pair, index) => {
+            currentPairs.forEach((pair, index) => {
                 cards.push({ id: idCounter++, type: index, text: pair.q });
                 cards.push({ id: idCounter++, type: index, text: pair.a });
             });
 
-            // 카드 무작위로 섞기
+            // 무작위로 섞기
             cards.sort(() => 0.5 - Math.random());
 
-            // 카드 화면에 그리기
+            // 카드 HTML 생성
             cards.forEach((card, index) => {
                 const cardElement = document.createElement('div');
                 cardElement.classList.add('card');
@@ -158,6 +220,7 @@
             });
         }
 
+        // 카드 뒤집기 로직
         function flipCard() {
             if (lockBoard) return;
             if (this === firstCard) return;
@@ -173,6 +236,7 @@
             checkForMatch();
         }
 
+        // 짝 맞는지 확인
         function checkForMatch() {
             let isMatch = firstCard.dataset.type === secondCard.dataset.type;
 
@@ -183,6 +247,7 @@
             }
         }
 
+        // 맞췄을 때
         function disableCards() {
             firstCard.classList.add('matched');
             secondCard.classList.add('matched');
@@ -192,13 +257,13 @@
             
             matchCount++;
             if (matchCount === 12) {
-                setTimeout(() => alert("축하합니다! 모든 카드를 맞췄습니다!"), 500);
+                setTimeout(() => alert("🎉 축하합니다! 모든 카드를 맞췄습니다!"), 500);
             }
         }
 
+        // 틀렸을 때 (1초 뒤 원상복구)
         function unflipCards() {
             lockBoard = true;
-            // 틀렸을 때 다시 뒤집히는 시간 (1000 = 1초)
             setTimeout(() => {
                 firstCard.classList.remove('flipped');
                 secondCard.classList.remove('flipped');
@@ -210,7 +275,56 @@
             [firstCard, secondCard, lockBoard] = [null, null, false];
         }
 
-        // 페이지 열리자마자 바로 게임 시작
+        // === 문제 수정 관련 로직 ===
+        
+        function openEditMode() {
+            document.getElementById('game-section').style.display = 'none';
+            document.getElementById('edit-section').style.display = 'block';
+            
+            const editList = document.getElementById('edit-list');
+            editList.innerHTML = '';
+            
+            // 기존 데이터들을 입력창에 채워넣기
+            currentPairs.forEach((pair, i) => {
+                const row = document.createElement('div');
+                row.classList.add('edit-row');
+                // \n을 띄어쓰기로 바꿔서 입력창에 깔끔하게 보이게 처리
+                let displayA = pair.a.replace(/\n/g, " ");
+                
+                row.innerHTML = `
+                    <span>${i + 1}번</span>
+                    <input type="text" id="edit-q-${i}" value="${pair.q}" placeholder="예: x² - 1 = 0">
+                    <input type="text" id="edit-a-${i}" value="${displayA}" placeholder="예: x = 1 또는 x = -1">
+                `;
+                editList.appendChild(row);
+            });
+        }
+
+        function closeEditMode() {
+            document.getElementById('edit-section').style.display = 'none';
+            document.getElementById('game-section').style.display = 'block';
+        }
+
+        function saveAndStart() {
+            // 12개의 입력값을 읽어서 currentPairs 업데이트
+            for (let i = 0; i < 12; i++) {
+                let qVal = document.getElementById(`edit-q-${i}`).value;
+                let aVal = document.getElementById(`edit-a-${i}`).value;
+                
+                // 정답(a)에서 '또는' 이라는 글자가 있으면 보기 좋게 앞뒤로 줄바꿈(\n) 추가
+                if(aVal.includes('또는') && !aVal.includes('\n')) {
+                    aVal = aVal.replace('또는', '\n또는\n');
+                }
+
+                currentPairs[i] = { q: qVal, a: aVal };
+            }
+            
+            // 화면 전환 및 새 게임 시작
+            closeEditMode();
+            startGame();
+        }
+
+        // 페이지 열리자마자 12쌍 게임 바로 시작
         window.onload = startGame;
     </script>
 </body>
