@@ -59,36 +59,37 @@
             line-height: 1.3;
         }
         
-        /* 카드 앞면 (백운중 X) */
+        /* === 바깥면(처음 보이는 면) 색깔 나누기 === */
+        /* 기본 바깥면 공통 설정 (글씨 색상 등) */
         .card-front {
-            background-color: #3b82f6;
-            color: white;
-            font-size: 18px;
+            color: #1f2937;
+            font-size: 16px;
         }
         
-        /* 공통 카드 뒷면 스타일 */
+        /* 문제 카드의 바깥면: 하늘색 */
+        .card-front.question-front {
+            background-color: #bae6fd;
+            border: 2px solid #7dd3fc;
+        }
+        
+        /* 정답 카드의 바깥면: 노란색 */
+        .card-front.answer-front {
+            background-color: #fef08a;
+            border: 2px solid #fde047;
+        }
+
+        /* === 안쪽면(뒤집었을 때 보이는 면) 스타일 === */
         .card-back {
+            background-color: white;
             color: #1f2937;
             transform: rotateY(180deg);
             font-size: 20px;
             white-space: pre-line;
-        }
-
-        /* 🟦 문제 카드 (하늘색) */
-        .card-back.question {
-            background-color: #bae6fd; 
-            border: 3px solid #38bdf8;
-        }
-
-        /* 🟨 정답 카드 (노란색) */
-        .card-back.answer {
-            background-color: #fef08a; 
-            border: 3px solid #eab308;
+            border: 3px solid #3b82f6;
         }
         
         /* 🟩 짝을 맞췄을 때 (초록색) */
-        .card.matched .card-back.question,
-        .card.matched .card-back.answer {
+        .card.matched .card-back {
             background-color: #10b981 !important;
             color: white !important;
             border-color: #10b981 !important;
@@ -166,7 +167,7 @@
     <!-- 2. 문제 수정 화면 -->
     <div id="edit-section">
         <h1>문제 직접 만들기 (12쌍)</h1>
-        <p class="info-text">식(하늘색)과 정답(노란색)을 입력해보세요! 완료 후 게임이 바로 시작됩니다.</p>
+        <p class="info-text">식과 정답을 입력해보세요! 완료 후 게임이 바로 시작됩니다.</p>
         <div id="edit-list"></div>
         <button class="btn-save" onclick="saveAndStart()">✅ 저장하고 내 게임 시작하기</button>
         <button class="btn-cancel" onclick="closeEditMode()" style="margin-top: 10px; width: 100%;">취소</button>
@@ -204,21 +205,30 @@
             
             let idCounter = 0;
             currentPairs.forEach((pair, index) => {
+                // 문제 카드는 'question' 타입 지정
                 cards.push({ id: idCounter++, type: index, text: pair.q, cardType: 'question' });
+                // 정답 카드는 'answer' 타입 지정
                 cards.push({ id: idCounter++, type: index, text: pair.a, cardType: 'answer' });
             });
 
+            // 카드 무작위 섞기
             cards.sort(() => 0.5 - Math.random());
 
+            // 카드 그리기
             cards.forEach((card, index) => {
                 const cardElement = document.createElement('div');
                 cardElement.classList.add('card');
                 cardElement.dataset.type = card.type;
                 
+                // cardType에 따라 바깥면(front)의 클래스를 다르게 줍니다.
+                const frontClass = card.cardType === 'question' ? 'question-front' : 'answer-front';
+                // 바깥면에 적힐 글씨
+                const frontText = card.cardType === 'question' ? `문제 ${index + 1}` : `정답 ${index + 1}`;
+
                 cardElement.innerHTML = `
                     <div class="card-inner">
-                        <div class="card-face card-front">백운중 ${index + 1}</div>
-                        <div class="card-face card-back ${card.cardType}">${card.text}</div>
+                        <div class="card-face card-front ${frontClass}">${frontText}</div>
+                        <div class="card-face card-back">${card.text}</div>
                     </div>
                 `;
                 
