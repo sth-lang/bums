@@ -1,247 +1,217 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>백운중 카드 뒤집기 놀이</title>
-<style>
-  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-  body { 
-    font-family: 'Pretendard', sans-serif; 
-    background-color: #f0fdf4; /* 연한 초록빛 배경 */
-    padding: 20px; 
-    margin: 0;
-    color: #333;
-  }
-  .container { 
-    max-width: 800px; 
-    margin: 0 auto; 
-    background: white; 
-    padding: 30px; 
-    border-radius: 16px; 
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
-  }
-  h1, h2 { text-align: center; color: #166534; }
-  .setup-section { margin-bottom: 20px; }
-  .pair-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
-  .pair-row label { font-weight: bold; color: #15803d; width: 40px; }
-  .pair-row input { 
-    flex: 1; 
-    padding: 12px; 
-    border: 2px solid #bbf7d0; 
-    border-radius: 8px; 
-    font-size: 1rem;
-    transition: border-color 0.2s;
-  }
-  .pair-row input:focus { outline: none; border-color: #22c55e; }
-  .btn-container { text-align: center; margin-top: 20px; }
-  .btn { 
-    background: #16a34a; 
-    color: white; 
-    padding: 12px 24px; 
-    border: none; 
-    border-radius: 8px; 
-    font-size: 1.1rem; 
-    font-weight: bold;
-    cursor: pointer; 
-    transition: background 0.2s;
-  }
-  .btn:hover { background: #15803d; }
-  .btn-secondary { background: #6b7280; }
-  .btn-secondary:hover { background: #4b5563; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>백운중 이차방정식 카드 놀이</title>
+    <style>
+        body { 
+            font-family: 'Pretendard', -apple-system, sans-serif; 
+            background-color: #f3f4f6; 
+            text-align: center; 
+            padding: 20px; 
+            margin: 0;
+        }
+        h1 { color: #1f2937; font-size: 24px; margin-bottom: 20px; }
+        
+        /* 24개 카드 그리드 배치 (모바일은 4칸, PC는 6칸) */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        @media (min-width: 768px) {
+            .grid-container { grid-template-columns: repeat(6, 1fr); max-width: 800px; }
+        }
 
-  /* 게임 보드: 4x4 그리드 */
-  .grid { 
-    display: grid; 
-    grid-template-columns: repeat(4, 1fr); 
-    gap: 15px; 
-    display: none; 
-    margin-top: 20px;
-  }
-
-  /* 카드: 정사각형 (aspect-ratio 적용) */
-  .card { 
-    aspect-ratio: 1 / 1; 
-    perspective: 1000px; 
-    cursor: pointer; 
-  }
-  .card-inner { 
-    position: relative; 
-    width: 100%; 
-    height: 100%; 
-    transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); 
-    transform-style: preserve-3d; 
-  }
-  .card.flipped .card-inner { transform: rotateY(180deg); }
-  .card-front, .card-back { 
-    position: absolute; 
-    width: 100%; 
-    height: 100%; 
-    backface-visibility: hidden; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    border-radius: 12px; 
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
-    text-align: center; 
-    padding: 15px; 
-    box-sizing: border-box; 
-    word-break: keep-all; 
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-  .card-front { 
-    background: #22c55e; 
-    color: white; 
-    font-size: 1.3rem;
-  }
-  .card-back { 
-    background: white; 
-    border: 3px solid #22c55e; 
-    color: #1f2937; 
-    transform: rotateY(180deg); 
-  }
-  .card.matched .card-back { 
-    background: #fef08a; /* 노란색으로 강조 */
-    border-color: #eab308; 
-    color: #854d0e; 
-  }
-
-  @media (max-width: 600px) {
-    .grid { gap: 8px; }
-    .card-front { font-size: 1rem; }
-    .card-back { font-size: 0.9rem; padding: 5px; }
-    .pair-row { flex-direction: column; gap: 5px; margin-bottom: 15px; }
-    .pair-row label { width: auto; align-self: flex-start; }
-  }
-</style>
+        /* 카드 정사각형 유지 */
+        .card {
+            aspect-ratio: 1 / 1;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .card-inner {
+            width: 100%; height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            width: 100%; height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 14px;
+            font-weight: bold;
+            padding: 8px;
+            box-sizing: border-box;
+            word-break: keep-all;
+        }
+        
+        /* 카드 앞면 (백운중 X) */
+        .card-front {
+            background-color: #3b82f6;
+            color: white;
+            font-size: 16px;
+        }
+        
+        /* 카드 뒷면 (문제/정답) */
+        .card-back {
+            background-color: white;
+            color: #1f2937;
+            transform: rotateY(180deg);
+            border: 3px solid #3b82f6;
+        }
+        
+        /* 짝을 맞췄을 때 (초록색) */
+        .card.matched .card-back {
+            background-color: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+        
+        /* 새 게임 버튼 */
+        button {
+            margin-top: 30px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:hover { background-color: #4338ca; }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>백운중 카드 뒤집기 놀이</h1>
 
-    <!-- 문제 설정 화면 -->
-    <div id="setup" class="setup-section">
-      <h2>🛠️ 선생님/학생 문제 만들기</h2>
-      <p style="text-align:center; color:#4b5563; margin-bottom:20px;">
-        직접 식과 정답을 입력해서 나만의 게임을 만들어보세요!<br>기본값으로 이차방정식 8쌍이 입력되어 있습니다.
-      </p>
-      <div id="inputs"></div>
-      <div class="btn-container">
-        <button class="btn" onclick="startGame()">🎲 게임 생성 및 시작하기</button>
-      </div>
-    </div>
+    <h1>백운중 이차방정식 카드 뒤집기 (24장)</h1>
+    <div class="grid-container" id="game-board"></div>
+    <button onclick="startGame()">새 게임 시작하기 (섞기)</button>
 
-    <!-- 게임 화면 -->
-    <div id="game" class="grid"></div>
-    <div id="controls" class="btn-container" style="display:none;">
-        <button class="btn btn-secondary" onclick="resetToSetup()">✏️ 문제 다시 수정하기</button>
-        <button class="btn" onclick="startGame()">🔄 카드 다시 섞기</button>
-    </div>
-  </div>
+    <script>
+        // 12쌍(24개)의 이차방정식과 해답
+        const pairs = [
+            { q: "x² - 1 = 0", a: "x = 1<br>또는<br>x = -1" },
+            { q: "x² - 4 = 0", a: "x = 2<br>또는<br>x = -2" },
+            { q: "x² - 9 = 0", a: "x = 3<br>또는<br>x = -3" },
+            { q: "x² - 16 = 0", a: "x = 4<br>또는<br>x = -4" },
+            { q: "x² - 25 = 0", a: "x = 5<br>또는<br>x = -5" },
+            { q: "x² - 36 = 0", a: "x = 6<br>또는<br>x = -6" },
+            { q: "x² - 3x + 2 = 0", a: "x = 1<br>또는<br>x = 2" },
+            { q: "x² - 5x + 6 = 0", a: "x = 2<br>또는<br>x = 3" },
+            { q: "x² - x - 6 = 0", a: "x = -2<br>또는<br>x = 3" },
+            { q: "x² - 4x - 5 = 0", a: "x = -1<br>또는<br>x = 5" },
+            { q: "x² - 7x + 10 = 0", a: "x = 2<br>또는<br>x = 5" },
+            { q: "x² + 4x + 3 = 0", a: "x = -1<br>또는<br>x = -3" }
+        ];
 
-  <script>
-    // 기본 데이터 세팅
-    const defaultPairs = [
-      { q: 'x² - 25 = 0', a: 'x = 5 또는 x = -5' },
-      { q: 'x² - 3x + 2 = 0', a: 'x = 1 또는 x = 2' },
-      { q: 'x² + 5x + 6 = 0', a: 'x = -2 또는 x = -3' },
-      { q: 'x² - 6x + 9 = 0', a: 'x = 3 (중근)' },
-      { q: 'x² - x - 12 = 0', a: 'x = 4 또는 x = -3' },
-      { q: '2x² - 5x + 3 = 0', a: 'x = 1 또는 x = 1.5' },
-      { q: 'x(x - 4) = 0', a: 'x = 0 또는 x = 4' },
-      { q: '3x² = 27', a: 'x = 3 또는 x = -3' }
-    ];
+        let cards = [];
+        let firstCard = null;
+        let secondCard = null;
+        let lockBoard = false;
+        let matchCount = 0;
 
-    const inputsDiv = document.getElementById('inputs');
-    defaultPairs.forEach((pair, i) => {
-      inputsDiv.innerHTML += `
-        <div class="pair-row">
-          <label>쌍 ${i+1}</label>
-          <input type="text" id="q${i}" value="${pair.q}" placeholder="식 또는 문제 입력">
-          <input type="text" id="a${i}" value="${pair.a}" placeholder="정답 입력">
-        </div>
-      `;
-    });
+        function startGame() {
+            const board = document.getElementById('game-board');
+            board.innerHTML = '';
+            cards = [];
+            matchCount = 0;
+            
+            // 짝꿍 데이터 만들기
+            let idCounter = 0;
+            pairs.forEach((pair, index) => {
+                cards.push({ id: idCounter++, type: index, text: pair.q });
+                cards.push({ id: idCounter++, type: index, text: pair.a });
+            });
 
-    let flippedCards = [];
-    let matchedCount = 0;
+            // 카드 무작위로 섞기
+            cards.sort(() => 0.5 - Math.random());
 
-    function startGame() {
-      // 화면 전환
-      document.getElementById('setup').style.display = 'none';
-      document.getElementById('game').style.display = 'grid';
-      document.getElementById('controls').style.display = 'block';
-
-      // 입력된 데이터 읽어오기
-      let items = [];
-      for(let i=0; i<8; i++) {
-        let q = document.getElementById(`q${i}`).value.trim() || `문제 ${i+1}`;
-        let a = document.getElementById(`a${i}`).value.trim() || `정답 ${i+1}`;
-        items.push({ text: q, matchId: i });
-        items.push({ text: a, matchId: i });
-      }
-
-      // 카드 랜덤 섞기
-      items.sort(() => Math.random() - 0.5);
-
-      // 카드 생성하기
-      const gameDiv = document.getElementById('game');
-      gameDiv.innerHTML = '';
-      flippedCards = [];
-      matchedCount = 0;
-
-      items.forEach((item, index) => {
-        let card = document.createElement('div');
-        card.className = 'card';
-        card.dataset.match = item.matchId;
-        card.innerHTML = `
-          <div class="card-inner">
-            <div class="card-front">백운중 ${index + 1}</div>
-            <div class="card-back">${item.text}</div>
-          </div>
-        `;
-        card.onclick = () => flipCard(card);
-        gameDiv.appendChild(card);
-      });
-    }
-
-    function flipCard(card) {
-      // 이미 2장이 뒤집혀 있거나, 현재 카드가 이미 뒤집힌/맞춘 카드라면 무시
-      if (flippedCards.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return;
-
-      card.classList.add('flipped');
-      flippedCards.push(card);
-
-      if (flippedCards.length === 2) {
-        setTimeout(checkMatch, 800);
-      }
-    }
-
-    function checkMatch() {
-      const [card1, card2] = flippedCards;
-      if (card1.dataset.match === card2.dataset.match) {
-        // 정답일 경우
-        card1.classList.add('matched');
-        card2.classList.add('matched');
-        matchedCount++;
-
-        if(matchedCount === 8) {
-            setTimeout(() => alert('🎉 모든 짝을 맞추셨습니다! 대단해요!'), 400);
+            // 카드 화면에 그리기
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.type = card.type;
+                
+                cardElement.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-face card-front">백운중 ${index + 1}</div>
+                        <div class="card-face card-back">${card.text}</div>
+                    </div>
+                `;
+                
+                cardElement.addEventListener('click', flipCard);
+                board.appendChild(cardElement);
+            });
         }
-      } else {
-        // 틀렸을 경우 다시 뒤집기
-        card1.classList.remove('flipped');
-        card2.classList.remove('flipped');
-      }
-      flippedCards = [];
-    }
 
-    function resetToSetup() {
-      document.getElementById('setup').style.display = 'block';
-      document.getElementById('game').style.display = 'none';
-      document.getElementById('controls').style.display = 'none';
-    }
-  </script>
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === firstCard) return;
+
+            this.classList.add('flipped');
+
+            if (!firstCard) {
+                firstCard = this;
+                return;
+            }
+
+            secondCard = this;
+            checkForMatch();
+        }
+
+        function checkForMatch() {
+            let isMatch = firstCard.dataset.type === secondCard.dataset.type;
+
+            if (isMatch) {
+                disableCards();
+            } else {
+                unflipCards();
+            }
+        }
+
+        function disableCards() {
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            resetBoard();
+            
+            matchCount++;
+            if (matchCount === 12) {
+                setTimeout(() => alert("축하합니다! 모든 카드를 맞췄습니다!"), 500);
+            }
+        }
+
+        function unflipCards() {
+            lockBoard = true;
+            // 틀렸을 때 다시 뒤집히는 시간 (1000 = 1초)
+            setTimeout(() => {
+                firstCard.classList.remove('flipped');
+                secondCard.classList.remove('flipped');
+                resetBoard();
+            }, 1000);
+        }
+
+        function resetBoard() {
+            [firstCard, secondCard, lockBoard] = [null, null, false];
+        }
+
+        // 페이지 열리자마자 바로 게임 시작
+        window.onload = startGame;
+    </script>
 </body>
 </html>
