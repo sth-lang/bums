@@ -52,8 +52,13 @@
         }
         #front-controls.hidden {
             opacity: 0;
+            visibility: hidden;
             pointer-events: none;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+        }
+        #front-controls.hidden #center-dial,
+        #front-controls.hidden #front-edit-btn {
+            pointer-events: none !important;
         }
         #center-dial {
             position: relative;
@@ -428,14 +433,18 @@
         function hideFrontControls() {
             const frontControls = document.getElementById('front-controls');
             const dial = document.getElementById('center-dial');
+            const frontEditBtn = document.getElementById('front-edit-btn');
             if (frontControls) frontControls.classList.add('hidden');
+            if (frontEditBtn) frontEditBtn.disabled = true;
             if (dial) dial.classList.add('unlocking');
         }
 
         function showFrontControls() {
             const frontControls = document.getElementById('front-controls');
             const dial = document.getElementById('center-dial');
+            const frontEditBtn = document.getElementById('front-edit-btn');
             if (frontControls) frontControls.classList.remove('hidden');
+            if (frontEditBtn) frontEditBtn.disabled = false;
             if (dial) {
                 dial.classList.remove('unlocking');
                 dial.style.opacity = '1';
