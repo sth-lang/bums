@@ -3,232 +3,388 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>백운중 이차방정식 카드 놀이</title>
-    <!-- 꽃가루 효과를 위한 외부 라이브러리 불러오기 -->
+    <title>백운중 기밀 금고 해독 작전</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body { 
             font-family: 'Pretendard', -apple-system, sans-serif; 
             background-color: #f3f4f6; 
-            text-align: center; 
-            padding: 20px; 
-            margin: 0;
-            overflow-x: hidden;
+            text-align: center; padding: 0; margin: 0;
+            overflow: hidden;
         }
-        h1 { color: #1f2937; font-size: 26px; margin-bottom: 20px; font-weight: 800; }
         
-        #game-section { display: block; }
-        
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            max-width: 600px;
-            margin: 0 auto;
+        /* === 1. 철제 금고문 === */
+        #vault-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9000; display: flex; pointer-events: none;
         }
-        @media (min-width: 768px) {
-            .grid-container { grid-template-columns: repeat(6, 1fr); max-width: 900px; }
+        .door {
+            width: 50%; height: 100%;
+            background: linear-gradient(to right, #93c5fd, #60a5fa);
+            border: 10px solid #dbeafe;
+            box-sizing: border-box; position: relative;
+            transition: transform 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
         }
+        .door::before {
+            content: ''; position: absolute; top: 20px; bottom: 20px;
+            width: 20px; border-left: 6px dotted #0f172a; opacity: 0.5;
+        }
+        .door.left { transform: translateX(0); border-right: 5px solid #000; }
+        .door.left::before { left: 20px; }
+        .door.right { transform: translateX(0); border-left: 5px solid #000; }
+        .door.right::before { right: 20px; }
+        .door.left.open { transform: translateX(-100%); }
+        .door.right.open { transform: translateX(100%); }
 
-        .card {
-            aspect-ratio: 1 / 1;
-            perspective: 1000px;
-            cursor: pointer;
-        }
-        .card-inner {
-            width: 100%; height: 100%;
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
-            position: relative;
-        }
-        .card.flipped .card-inner {
-            transform: rotateY(180deg);
-        }
-        .card-face {
-            width: 100%; height: 100%;
+        /* === 2. 중앙 다이얼 (시작 버튼) === */
+        #front-controls {
             position: absolute;
-            backface-visibility: hidden;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9500;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            font-weight: bold;
-            padding: 8px;
-            box-sizing: border-box;
-            word-break: keep-all;
-            text-align: center;
-            line-height: 1.3;
+            gap: 18px;
+            pointer-events: none;
         }
-        
-        .card-front { color: #1f2937; font-size: 16px; }
-        .card-front.question-front { background-color: #bae6fd; border: 2px solid #7dd3fc; }
-        .card-front.answer-front { background-color: #fef08a; border: 2px solid #fde047; }
-
-        .card-back {
-            background-color: white; color: #1f2937;
-            transform: rotateY(180deg); font-size: 20px;
-            white-space: pre-line; border: 3px solid #3b82f6;
+        #front-controls.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
         }
-        .card.matched .card-back {
-            background-color: #10b981 !important; color: white !important; border-color: #10b981 !important;
+        #center-dial {
+            position: relative;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #93c5fd 65%, #60a5fa 100%);
+            border: 12px solid #dbeafe;
+            border-radius: 50%; z-index: 9500;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; pointer-events: auto;
+            box-shadow: 0 10px 30px rgba(37,99,235,0.35), inset 0 5px 15px rgba(255,255,255,0.6);
+            transition: transform 1.5s ease-in-out, opacity 1s;
         }
-
-        /* === 축하 화면 & 8비트 사탕 룰렛 스타일 === */
-        #victory-overlay {
-            display: none; position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.9); z-index: 9999; 
-            flex-direction: column; align-items: center; justify-content: center; color: white;
-        }
-        .victory-title { font-size: 2.5rem; color: #fbbf24; margin-bottom: 10px; text-shadow: 0 0 15px #f59e0b; }
-        .victory-gif { width: 120px; height: 120px; image-rendering: pixelated; margin-bottom: 20px; border-radius: 10px; }
-
-        /* 레트로 오락기 화면 스타일 (룰렛) */
-        .retro-arcade {
-            background-color: #222;
-            border: 6px solid #aaa;
-            border-style: outset;
-            padding: 15px 30px;
-            margin-bottom: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
-            font-family: 'Courier New', Courier, monospace; /* 레트로 느낌의 폰트 */
-            min-width: 250px;
-        }
-        .retro-subtitle { color: #fff; font-size: 1rem; margin-bottom: 10px; }
-        .roulette-display {
-            font-size: 2.5rem;
-            color: #39ff14; /* 네온 그린 */
+        #center-dial:hover { filter: brightness(1.15); }
+        .dial-text { font-size: 1.5rem; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin-bottom: 5px; }
+        .dial-sub { font-size: 1rem; color: #fef3c7; font-weight: bold; }
+        #center-dial.unlocking { transform: rotate(720deg) scale(0.3); opacity: 0; pointer-events: none; }
+        #front-edit-btn {
+            pointer-events: auto;
+            padding: 12px 22px;
+            border: none;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            font-size: 17px;
             font-weight: 900;
-            text-shadow: 0 0 10px #39ff14;
-            margin: 10px 0;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(146, 64, 14, 0.25);
+            border: 3px solid rgba(251, 191, 36, 0.75);
         }
-        .blink { animation: blinker 0.3s linear infinite; color: #fbbf24; text-shadow: 0 0 15px #fbbf24; }
-        @keyframes blinker { 50% { opacity: 0; } }
+        #front-edit-btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
 
-        /* 수정 화면 스타일 등 */
-        #edit-section { 
-            display: none; max-width: 600px; margin: 0 auto; background: white; 
-            padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        /* === 3. 게임 화면 === */
+        #game-section { position: absolute; top:0; left:0; width:100%; height:100%; overflow-y: auto; padding: 20px; box-sizing: border-box; display: none; }
+        h1.game-title { color: #1f2937; font-size: 26px; margin-bottom: 20px; font-weight: 800; }
+        .grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 600px; margin: 0 auto; }
+        @media (min-width: 768px) { .grid-container { grid-template-columns: repeat(6, 1fr); max-width: 900px; } }
+        .card { aspect-ratio: 1 / 1; perspective: 1000px; cursor: pointer; }
+        .card-inner { width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; position: relative; }
+        .card.flipped .card-inner { transform: rotateY(180deg); }
+        .card-face {
+            width: 100%; height: 100%; position: absolute; backface-visibility: hidden;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-weight: bold; padding: 8px; box-sizing: border-box; word-break: keep-all; text-align: center; line-height: 1.3;
         }
+        .card-front { color: #1f2937; font-size: 16px; }
+        .card-front.question-front { background-color: #dbeafe; border: 2px solid #93c5fd; }
+        .card-front.answer-front { background-color: #fef9c3; border: 2px solid #facc15; }
+        .card-back { background-color: #ffffff; color: #1f2937; transform: rotateY(180deg); font-size: 20px; white-space: pre-line; border: 3px solid #93c5fd; box-shadow: 0 0 12px rgba(147,197,253,0.45); }
+        .card.matched .card-back { background-color: #10b981 !important; color: white !important; border-color: #10b981 !important; }
+
+        /* === 4. CSS로 직접 그린 보물창고 배경 === */
+        #treasure-room {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(ellipse at center, #fde047 0%, #ca8a04 40%, #78350f 80%, #451a03 100%);
+            z-index: 8000; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        /* 보물 아이콘들 (CSS로 흩뿌리기) */
+        .treasure-bg-item {
+            position: absolute; font-size: 3rem; opacity: 0.7;
+            animation: sparkle 3s ease-in-out infinite alternate;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+            pointer-events: none;
+        }
+        @keyframes sparkle { 
+            from { transform: scale(1) rotate(-5deg); opacity: 0.6; }
+            to { transform: scale(1.2) rotate(5deg); opacity: 1; }
+        }
+        /* 8개 보물 위치 지정 */
+        .t1 { top: 8%; left: 8%; animation-delay: 0s; }
+        .t2 { top: 12%; right: 10%; animation-delay: 0.5s; }
+        .t3 { bottom: 15%; left: 12%; animation-delay: 1s; }
+        .t4 { bottom: 10%; right: 8%; animation-delay: 1.5s; }
+        .t5 { top: 45%; left: 5%; animation-delay: 0.3s; }
+        .t6 { top: 50%; right: 5%; animation-delay: 0.8s; }
+        .t7 { top: 25%; left: 30%; animation-delay: 1.2s; font-size: 2.5rem; }
+        .t8 { bottom: 25%; right: 28%; animation-delay: 1.7s; font-size: 2.5rem; }
+
+        .treasure-content { 
+            position: relative; z-index: 5;
+            display: flex; flex-direction: column; align-items: center;
+            background: rgba(0,0,0,0.4); padding: 30px 50px; border-radius: 20px;
+            backdrop-filter: blur(3px); border: 3px solid rgba(255, 215, 0, 0.6);
+        }
+        .treasure-icon { font-size: 5rem; margin-bottom: 0px; animation: bounce 2s infinite; text-shadow: 0 0 30px gold; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        .victory-title { font-size: 3rem; color: #fff; margin: 10px 0; text-shadow: 0 0 20px #fbbf24, 0 0 40px #f59e0b; font-weight: 900; }
+        
+        /* 룰렛 기계 */
+        .retro-arcade {
+            background-color: rgba(17, 24, 39, 0.95); border: 6px solid #fbbf24; padding: 20px 40px;
+            margin: 20px 0; border-radius: 12px; box-shadow: 0 0 40px rgba(251, 191, 36, 0.8);
+            min-width: 280px; text-align: center;
+        }
+        .retro-subtitle { color: #f8fafc; font-size: 1.2rem; margin-bottom: 15px; font-weight: bold; }
+        .roulette-display { font-size: 3rem; color: #39ff14; font-weight: 900; text-shadow: 0 0 20px #39ff14; margin: 10px 0; height: 60px; }
+        .blink { animation: blinker 0.3s linear infinite; color: #fbbf24; text-shadow: 0 0 20px #fbbf24; }
+        @keyframes blinker { 50% { opacity: 0.3; } }
+
+        /* 버튼 */
+        .btn-group { margin-top: 30px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; padding-bottom: 50px; }
+        button.action-btn { padding: 12px 24px; font-size: 16px; font-weight: bold; color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: 0.2s; }
+        .btn-primary { background-color: #4f46e5; }
+        .btn-secondary { background-color: #f59e0b; }
+
+        /* 수정 화면 */
+        #edit-section { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: #f3f4f6; overflow-y: auto; padding: 20px; z-index: 8500; box-sizing: border-box; }
+        .edit-container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .edit-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
         .edit-row span { font-weight: bold; width: 40px; }
         .edit-row input { flex: 1; padding: 10px; font-size: 16px; border: 1px solid #d1d5db; border-radius: 6px; }
-
-        .btn-group { margin-top: 30px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
-        button { padding: 12px 24px; font-size: 16px; font-weight: bold; color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: background-color 0.2s; }
-        .btn-primary { background-color: #4f46e5; }
-        .btn-primary:hover { background-color: #4338ca; }
-        .btn-secondary { background-color: #f59e0b; }
-        .btn-secondary:hover { background-color: #d97706; }
-        .btn-cancel { background-color: #6b7280; }
-        .btn-cancel:hover { background-color: #4b5563; }
         .btn-save { background-color: #10b981; width: 100%; margin-top: 15px;}
-        .btn-save:hover { background-color: #059669; }
-        .info-text { font-size: 14px; color: #6b7280; margin-bottom: 20px; }
+        .btn-cancel { background-color: #6b7280; width: 100%; margin-top: 10px;}
     </style>
 </head>
 <body>
 
-    <!-- 축하 화면 & 사탕 룰렛 오버레이 -->
-    <div id="victory-overlay">
-        <h1 class="victory-title">🎉 완벽하게 맞췄습니다! 🎉</h1>
-        <img class="victory-gif" src="https://media.tenor.com/97y4tL_wWvMAAAAj/pixel-dance.gif" alt="춤추는 캐릭터">
-        
-        <!-- 8비트 사탕 룰렛 기계 -->
-        <div class="retro-arcade">
-            <div class="retro-subtitle" id="roulette-msg">오늘의 보상 사탕 맛은?</div>
-            <div class="roulette-display" id="roulette-display">???</div>
-        </div>
-
-        <button onclick="closeVictory()" style="background-color:#10b981; font-size:1.2rem; padding:15px 30px;">다시 게임하기</button>
+    <div id="vault-container">
+        <div class="door left" id="door-left"></div>
+        <div class="door right" id="door-right"></div>
     </div>
 
-    <!-- 1. 게임 화면 -->
+    <div id="front-controls">
+        <div id="center-dial" onclick="startVaultSequence()">
+            <span class="dial-text">금고 열기</span>
+            <span class="dial-sub">▶ 게임 시작</span>
+        </div>
+        <button id="front-edit-btn" onclick="openFrontEditMode()">✏️ 암호 바꾸기</button>
+    </div>
+
+    <!-- 💎 보물창고: 코드로 직접 그린 화려한 배경 -->
+    <div id="treasure-room">
+        <!-- 흩뿌려진 보물 아이콘들 -->
+        <div class="treasure-bg-item t1">💎</div>
+        <div class="treasure-bg-item t2">👑</div>
+        <div class="treasure-bg-item t3">💰</div>
+        <div class="treasure-bg-item t4">🏆</div>
+        <div class="treasure-bg-item t5">💍</div>
+        <div class="treasure-bg-item t6">🪙</div>
+        <div class="treasure-bg-item t7">✨</div>
+        <div class="treasure-bg-item t8">⭐</div>
+        
+        <div class="treasure-content">
+            <div class="treasure-icon">💎👑💰</div>
+            <h1 class="victory-title">보물창고 개방 성공!</h1>
+            
+            <div class="retro-arcade">
+                <div class="retro-subtitle" id="roulette-msg">오늘 요원들의 보상 사탕은?</div>
+                <div class="roulette-display" id="roulette-display">???</div>
+            </div>
+
+            <button class="action-btn" style="background-color:#10b981; font-size:1.2rem; padding:15px 40px;" onclick="resetToBeginning()">다시 금고 잠그기</button>
+        </div>
+    </div>
+
     <div id="game-section">
-        <h1>백운중 이차방정식 카드 게임</h1>
+        <h1 class="game-title">🔐 이차방정식 금고 해독 (듀얼 키 매칭)</h1>
         <div class="grid-container" id="game-board"></div>
         <div class="btn-group">
-            <button class="btn-primary" onclick="startGame()">새 게임 시작 (섞기)</button>
-            <button class="btn-secondary" onclick="openEditMode()">내 문제 직접 만들기 ✏️</button>
+            <button class="action-btn btn-primary" onclick="shuffleAgain()">새 게임 (섞기)</button>
+            <button class="action-btn btn-secondary" onclick="openEditMode()">새로운 암호 설계하기 ✏️</button>
         </div>
     </div>
 
-    <!-- 2. 문제 수정 화면 -->
     <div id="edit-section">
-        <h1>문제 직접 만들기 (12쌍)</h1>
-        <p class="info-text">식과 정답을 입력해보세요! 완료 후 게임이 바로 시작됩니다.</p>
-        <div id="edit-list"></div>
-        <button class="btn-save" onclick="saveAndStart()">✅ 저장하고 내 게임 시작하기</button>
-        <button class="btn-cancel" onclick="closeEditMode()" style="margin-top: 10px; width: 100%;">취소</button>
+        <div class="edit-container">
+            <h1 class="game-title">함정 암호 설계 (12쌍)</h1>
+            <p style="color:#6b7280; font-size:14px; margin-bottom:20px;">암호를 만들고 기밀 금고를 새롭게 잠그세요.</p>
+            <div id="edit-list"></div>
+            <button class="action-btn btn-save" onclick="saveAndStart()">✅ 암호 저장 & 금고 잠그기</button>
+            <button class="action-btn btn-cancel" onclick="closeEditMode()">취소</button>
+        </div>
     </div>
 
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
+        // === 🎵 현실적인 금고 사운드 시스템 ===
+        
+        // 노이즈 버퍼 생성 (기계 소리에 사용)
+        function createNoiseBuffer(duration) {
+            const bufferSize = audioCtx.sampleRate * duration;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            return buffer;
+        }
+
+        // 🔐 진짜같은 금고 열리는 소리 (3단 합성)
+        function playVaultOpenSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            
+            // 1단계: 딸깍! 잠금장치 풀리는 금속 소리
+            const click = audioCtx.createOscillator();
+            const clickGain = audioCtx.createGain();
+            click.connect(clickGain); clickGain.connect(audioCtx.destination);
+            click.type = 'square';
+            click.frequency.setValueAtTime(1200, now);
+            click.frequency.exponentialRampToValueAtTime(400, now + 0.08);
+            clickGain.gain.setValueAtTime(0.3, now);
+            clickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            click.start(now); click.stop(now + 0.1);
+
+            // 2단계: 위이잉~ 기어가 돌아가는 기계 소리 (노이즈+저주파)
+            const noiseSource = audioCtx.createBufferSource();
+            noiseSource.buffer = createNoiseBuffer(1.5);
+            const noiseFilter = audioCtx.createBiquadFilter();
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.setValueAtTime(200, now + 0.2);
+            noiseFilter.frequency.linearRampToValueAtTime(150, now + 1.5);
+            noiseFilter.Q.value = 5;
+            const noiseGain = audioCtx.createGain();
+            noiseSource.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(audioCtx.destination);
+            noiseGain.gain.setValueAtTime(0, now + 0.2);
+            noiseGain.gain.linearRampToValueAtTime(0.4, now + 0.4);
+            noiseGain.gain.linearRampToValueAtTime(0.3, now + 1.3);
+            noiseGain.gain.linearRampToValueAtTime(0, now + 1.6);
+            noiseSource.start(now + 0.2); noiseSource.stop(now + 1.6);
+            
+            // 3단계: 쿠궁~ 묵직한 문이 움직이는 저음 럼블
+            const rumble = audioCtx.createOscillator();
+            const rumbleGain = audioCtx.createGain();
+            rumble.connect(rumbleGain); rumbleGain.connect(audioCtx.destination);
+            rumble.type = 'sine';
+            rumble.frequency.setValueAtTime(50, now + 0.3);
+            rumble.frequency.linearRampToValueAtTime(35, now + 1.8);
+            rumbleGain.gain.setValueAtTime(0, now + 0.3);
+            rumbleGain.gain.linearRampToValueAtTime(0.6, now + 0.6);
+            rumbleGain.gain.linearRampToValueAtTime(0.4, now + 1.5);
+            rumbleGain.gain.linearRampToValueAtTime(0, now + 1.9);
+            rumble.start(now + 0.3); rumble.stop(now + 1.9);
+        }
+
+        // 🔒 금고 닫히는 소리 (쿠궁! 쾅!)
+        function playVaultCloseSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            
+            // 1단계: 묵직하게 움직이는 럼블
+            const rumble = audioCtx.createOscillator();
+            const rumbleGain = audioCtx.createGain();
+            rumble.connect(rumbleGain); rumbleGain.connect(audioCtx.destination);
+            rumble.type = 'sine';
+            rumble.frequency.setValueAtTime(45, now);
+            rumble.frequency.linearRampToValueAtTime(30, now + 1.2);
+            rumbleGain.gain.setValueAtTime(0.5, now);
+            rumbleGain.gain.linearRampToValueAtTime(0.3, now + 1.2);
+            rumbleGain.gain.linearRampToValueAtTime(0, now + 1.4);
+            rumble.start(now); rumble.stop(now + 1.4);
+            
+            // 2단계: 쾅! 닫힐 때 강한 충격음 (1.2초 뒤)
+            const slam = audioCtx.createOscillator();
+            const slamGain = audioCtx.createGain();
+            slam.connect(slamGain); slamGain.connect(audioCtx.destination);
+            slam.type = 'square';
+            slam.frequency.setValueAtTime(80, now + 1.2);
+            slam.frequency.exponentialRampToValueAtTime(20, now + 1.5);
+            slamGain.gain.setValueAtTime(0.9, now + 1.2);
+            slamGain.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+            slam.start(now + 1.2); slam.stop(now + 1.5);
+            
+            // 3단계: 철컥! 잠금 걸리는 금속 소리
+            const lock = audioCtx.createOscillator();
+            const lockGain = audioCtx.createGain();
+            lock.connect(lockGain); lockGain.connect(audioCtx.destination);
+            lock.type = 'square';
+            lock.frequency.setValueAtTime(800, now + 1.4);
+            lock.frequency.exponentialRampToValueAtTime(300, now + 1.55);
+            lockGain.gain.setValueAtTime(0.3, now + 1.4);
+            lockGain.gain.exponentialRampToValueAtTime(0.01, now + 1.6);
+            lock.start(now + 1.4); lock.stop(now + 1.6);
+        }
+
+        // 기타 효과음
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
             const now = audioCtx.currentTime;
             
             if (type === 'flip') {
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(300, now);
-                oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.1);
-                gainNode.gain.setValueAtTime(0.5, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                oscillator.start(now); oscillator.stop(now + 0.1);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
             } else if (type === 'match') {
-                oscillator.type = 'triangle';
-                oscillator.frequency.setValueAtTime(523.25, now);
-                oscillator.frequency.setValueAtTime(659.25, now + 0.1);
-                oscillator.frequency.setValueAtTime(783.99, now + 0.2);
-                gainNode.gain.setValueAtTime(0, now);
-                gainNode.gain.linearRampToValueAtTime(0.3, now + 0.05);
-                gainNode.gain.linearRampToValueAtTime(0, now + 0.4);
-                oscillator.start(now); oscillator.stop(now + 0.4);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.1); osc.frequency.setValueAtTime(783.99, now + 0.2);
+                gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.3, now + 0.05); gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
             } else if (type === 'wrong') {
-                oscillator.type = 'sawtooth';
-                oscillator.frequency.setValueAtTime(150, now);
-                oscillator.frequency.linearRampToValueAtTime(100, now + 0.3);
-                gainNode.gain.setValueAtTime(0, now);
-                gainNode.gain.linearRampToValueAtTime(0.2, now + 0.05);
-                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
-                oscillator.start(now); oscillator.stop(now + 0.3);
+                // 힘 있는 '땡!' 실패음: 금속성 기본음 + 낮은 울림
+                const hit = audioCtx.createOscillator();
+                const hitGain = audioCtx.createGain();
+                hit.connect(hitGain); hitGain.connect(audioCtx.destination);
+                hit.type = 'square';
+                hit.frequency.setValueAtTime(360, now);
+                hit.frequency.exponentialRampToValueAtTime(180, now + 0.18);
+                hitGain.gain.setValueAtTime(0.42, now);
+                hitGain.gain.exponentialRampToValueAtTime(0.01, now + 0.38);
+                hit.start(now); hit.stop(now + 0.38);
+
+                const ring = audioCtx.createOscillator();
+                const ringGain = audioCtx.createGain();
+                ring.connect(ringGain); ringGain.connect(audioCtx.destination);
+                ring.type = 'sine';
+                ring.frequency.setValueAtTime(145, now + 0.02);
+                ring.frequency.linearRampToValueAtTime(110, now + 0.5);
+                ringGain.gain.setValueAtTime(0.32, now + 0.02);
+                ringGain.gain.exponentialRampToValueAtTime(0.01, now + 0.55);
+                ring.start(now + 0.02); ring.stop(now + 0.55);
+                return;
             } else if (type === 'tick') {
-                // 룰렛 돌아가는 또르르륵 소리
-                oscillator.type = 'square';
-                oscillator.frequency.setValueAtTime(800, now);
-                gainNode.gain.setValueAtTime(0.1, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                oscillator.start(now); oscillator.stop(now + 0.05);
+                osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
             } else if (type === 'tada') {
-                // 룰렛 당첨 빰빠밤 소리
-                oscillator.type = 'square';
-                oscillator.frequency.setValueAtTime(523.25, now); // 도
-                oscillator.frequency.setValueAtTime(659.25, now + 0.1); // 미
-                oscillator.frequency.setValueAtTime(783.99, now + 0.2); // 솔
-                oscillator.frequency.setValueAtTime(1046.50, now + 0.3); // 높은 도
-                gainNode.gain.setValueAtTime(0.2, now);
-                gainNode.gain.linearRampToValueAtTime(0, now + 0.8);
-                oscillator.start(now); oscillator.stop(now + 0.8);
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.1); osc.frequency.setValueAtTime(783.99, now + 0.2); osc.frequency.setValueAtTime(1046.50, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.8);
+                osc.start(now); osc.stop(now + 0.8);
             }
         }
 
-        // 🎵 더 길어진! 고전 게임 스타일 승리 노래
         function playVictorySong() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            
-            // 승리를 향해 올라가는 길고 신나는 8비트 멜로디
             const notes = [
                 { f: 392.00, d: 0.15 }, { f: 523.25, d: 0.15 }, { f: 659.25, d: 0.15 }, { f: 783.99, d: 0.3 }, 
                 { f: 659.25, d: 0.15 }, { f: 783.99, d: 0.3 },
@@ -237,62 +393,101 @@
                 { f: 392.00, d: 0.15 }, { f: 493.88, d: 0.15 }, { f: 587.33, d: 0.15 }, { f: 783.99, d: 0.3 }, 
                 { f: 783.99, d: 0.15 }, { f: 880.00, d: 0.15 }, { f: 987.77, d: 0.15 }, { f: 1046.50, d: 0.8 } 
             ];
-            
             let time = audioCtx.currentTime;
             notes.forEach(n => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
                 osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.type = 'square'; 
-                osc.frequency.value = n.f;
-                gain.gain.setValueAtTime(0.15, time);
-                gain.gain.exponentialRampToValueAtTime(0.01, time + n.d);
-                osc.start(time); osc.stop(time + n.d);
-                time += n.d;
+                osc.type = 'square'; osc.frequency.value = n.f;
+                gain.gain.setValueAtTime(0.15, time); gain.gain.exponentialRampToValueAtTime(0.01, time + n.d);
+                osc.start(time); osc.stop(time + n.d); time += n.d;
             });
         }
 
         function shootConfetti() {
-            var duration = 4000;
-            var end = Date.now() + duration;
+            var end = Date.now() + 4000;
             (function frame() {
-                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#3b82f6', '#10b981', '#fef08a', '#fde047', '#f43f5e'] });
-                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#3b82f6', '#10b981', '#fef08a', '#fde047', '#f43f5e'] });
-                if (Date.now() < end) { requestAnimationFrame(frame); }
+                confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 }, zIndex: 9999, colors: ['#ffd700', '#ff8c00', '#ffffff', '#fbbf24'] });
+                confetti({ particleCount: 6, angle: 120, spread: 55, origin: { x: 1 }, zIndex: 9999, colors: ['#ffd700', '#ff8c00', '#ffffff', '#fbbf24'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
             }());
         }
 
-        // 🎰 사탕 룰렛 로직
-        const candyFlavors = ['🍫 초코', '🍓 딸기', '🥛 딸기우유', '🍋 라임', '🍇 포도', '🥤 콜라', '🍊 오렌지'];
-        
-        function startRoulette() {
-            const display = document.getElementById('roulette-display');
-            const msg = document.getElementById('roulette-msg');
-            display.classList.remove('blink');
-            msg.innerText = "룰렛이 돌아갑니다...!";
-            
-            let ticks = 0;
-            const maxTicks = 45; // 총 돌아가는 횟수 (서서히 느려짐)
-            let speed = 50; // 초기 속도 (빠름)
 
-            function spin() {
-                const randomFlavor = candyFlavors[Math.floor(Math.random() * candyFlavors.length)];
-                display.innerText = randomFlavor;
-                playSound('tick'); // 또르륵 소리
+        function populateEditList() {
+            const editList = document.getElementById('edit-list');
+            editList.innerHTML = '';
+            currentPairs.forEach((pair, i) => {
+                const row = document.createElement('div');
+                row.classList.add('edit-row');
+                let displayA = pair.a.replace(/\n/g, " ");
+                row.innerHTML = `<span>${i + 1}번</span><input type="text" id="edit-q-${i}" value="${pair.q}" placeholder="암호"><input type="text" id="edit-a-${i}" value="${displayA}" placeholder="해독키">`;
+                editList.appendChild(row);
+            });
+        }
 
-                ticks++;
-                if (ticks < maxTicks) {
-                    // 뒤로 갈수록 속도가 느려짐
-                    if (ticks > maxTicks * 0.6) speed += 15;
-                    setTimeout(spin, speed);
-                } else {
-                    // 룰렛 정지 및 당첨!
-                    playSound('tada');
-                    msg.innerText = "당첨!! 선생님께 달라고 하세요! 🎉";
-                    display.classList.add('blink'); // 네온 깜빡임 효과
-                }
+        function hideFrontControls() {
+            const frontControls = document.getElementById('front-controls');
+            const dial = document.getElementById('center-dial');
+            if (frontControls) frontControls.classList.add('hidden');
+            if (dial) dial.classList.add('unlocking');
+        }
+
+        function showFrontControls() {
+            const frontControls = document.getElementById('front-controls');
+            const dial = document.getElementById('center-dial');
+            if (frontControls) frontControls.classList.remove('hidden');
+            if (dial) {
+                dial.classList.remove('unlocking');
+                dial.style.opacity = '1';
+                dial.style.pointerEvents = 'auto';
             }
-            setTimeout(spin, speed);
+        }
+
+        // === 금고 애니메이션 ===
+        function startVaultSequence() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            hideFrontControls();
+            playVaultOpenSound();
+
+            setTimeout(() => {
+                document.getElementById('door-left').classList.add('open');
+                document.getElementById('door-right').classList.add('open');
+                document.getElementById('game-section').style.display = 'block';
+                document.getElementById('edit-section').style.display = 'none';
+                document.getElementById('treasure-room').style.display = 'none';
+                initGameCards();
+            }, 500);
+        }
+
+        function closeVaultDoors(callback) {
+            playVaultCloseSound();
+            document.getElementById('door-left').classList.remove('open');
+            document.getElementById('door-right').classList.remove('open');
+            setTimeout(callback, 1800);
+        }
+
+        function openFrontEditMode() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            hideFrontControls();
+            playVaultOpenSound();
+
+            setTimeout(() => {
+                document.getElementById('door-left').classList.add('open');
+                document.getElementById('door-right').classList.add('open');
+                document.getElementById('game-section').style.display = 'none';
+                document.getElementById('treasure-room').style.display = 'none';
+                document.getElementById('edit-section').style.display = 'block';
+                populateEditList();
+            }, 500);
+        }
+
+        function openVaultDoors(callback) {
+            playVaultOpenSound();
+            document.getElementById('door-left').classList.add('open');
+            document.getElementById('door-right').classList.add('open');
+            setTimeout(callback, 1800);
         }
 
         // === 게임 로직 ===
@@ -307,42 +502,43 @@
 
         let cards = []; let firstCard = null; let secondCard = null; let lockBoard = false; let matchCount = 0;
 
-        function startGame() {
+        function initGameCards() {
             const board = document.getElementById('game-board'); board.innerHTML = '';
-            cards = []; matchCount = 0;
+            cards = []; matchCount = 0; lockBoard = false; firstCard = null; secondCard = null;
             
             let idCounter = 0;
             currentPairs.forEach((pair, index) => {
                 cards.push({ id: idCounter++, type: index, text: pair.q, cardType: 'question' });
                 cards.push({ id: idCounter++, type: index, text: pair.a, cardType: 'answer' });
             });
-
             cards.sort(() => 0.5 - Math.random());
 
             cards.forEach((card, index) => {
                 const cardElement = document.createElement('div');
                 cardElement.classList.add('card'); cardElement.dataset.type = card.type;
-                
                 const frontClass = card.cardType === 'question' ? 'question-front' : 'answer-front';
-                const frontText = card.cardType === 'question' ? `문제 ${index + 1}` : `정답 ${index + 1}`;
-
+                const frontText = card.cardType === 'question' ? `암호 ${index + 1}` : `해독키 ${index + 1}`;
                 cardElement.innerHTML = `
                     <div class="card-inner">
                         <div class="card-face card-front ${frontClass}">${frontText}</div>
                         <div class="card-face card-back">${card.text}</div>
-                    </div>
-                `;
+                    </div>`;
                 cardElement.addEventListener('click', flipCard);
                 board.appendChild(cardElement);
+            });
+        }
+
+        function shuffleAgain() {
+            closeVaultDoors(() => {
+                initGameCards();
+                openVaultDoors(()=>{});
             });
         }
 
         function flipCard() {
             if (lockBoard) return;
             if (this === firstCard) return;
-
             playSound('flip'); this.classList.add('flipped');
-
             if (!firstCard) { firstCard = this; return; }
             secondCard = this; checkForMatch();
         }
@@ -359,15 +555,20 @@
         function disableCards() {
             firstCard.classList.add('matched'); secondCard.classList.add('matched');
             firstCard.removeEventListener('click', flipCard); secondCard.removeEventListener('click', flipCard);
-            resetBoard(); matchCount++;
+            [firstCard, secondCard, lockBoard] = [null, null, false]; 
+            matchCount++;
             
             if (matchCount === 12) {
-                // 게임 클리어 이벤트!
                 setTimeout(() => {
-                    document.getElementById('victory-overlay').style.display = 'flex';
-                    playVictorySong(); 
-                    shootConfetti();   
-                    startRoulette(); // 사탕 룰렛 시작!
+                    closeVaultDoors(() => {
+                        document.getElementById('game-section').style.display = 'none';
+                        document.getElementById('treasure-room').style.display = 'flex';
+                        openVaultDoors(() => {
+                            playVictorySong(); 
+                            shootConfetti();   
+                            startRoulette();
+                        });
+                    });
                 }, 800);
             }
         }
@@ -376,49 +577,79 @@
             lockBoard = true;
             setTimeout(() => {
                 firstCard.classList.remove('flipped'); secondCard.classList.remove('flipped');
-                resetBoard();
+                [firstCard, secondCard, lockBoard] = [null, null, false];
             }, 1000);
         }
 
-        function resetBoard() { [firstCard, secondCard, lockBoard] = [null, null, false]; }
-
-        function closeVictory() {
-            document.getElementById('victory-overlay').style.display = 'none';
-            document.getElementById('roulette-display').innerText = "???"; // 룰렛 초기화
-            startGame();
+        // 룰렛
+        const candyFlavors = ['🍫 초코 맛', '🍓 딸기 맛', '🥛 딸기우유 맛', '🍋 라임 맛', '🍇 포도 맛', '🥤 콜라 맛', '🍊 오렌지 맛'];
+        function startRoulette() {
+            const display = document.getElementById('roulette-display');
+            const msg = document.getElementById('roulette-msg');
+            display.classList.remove('blink'); msg.innerText = "금고 속 보상 룰렛이 돌아갑니다...!";
+            
+            let ticks = 0; const maxTicks = 45; let speed = 50;
+            function spin() {
+                display.innerText = candyFlavors[Math.floor(Math.random() * candyFlavors.length)];
+                playSound('tick');
+                ticks++;
+                if (ticks < maxTicks) {
+                    if (ticks > maxTicks * 0.6) speed += 15;
+                    setTimeout(spin, speed);
+                } else {
+                    playSound('tada');
+                    msg.innerText = "✨ 당첨! 요원들에게 보상을 지급하세요! ✨";
+                    display.classList.add('blink');
+                }
+            }
+            setTimeout(spin, speed);
         }
 
-        // 수정 기능 로직
+        function resetToBeginning() {
+            closeVaultDoors(() => {
+                document.getElementById('treasure-room').style.display = 'none';
+                document.getElementById('game-section').style.display = 'none';
+                showFrontControls();
+            });
+        }
+
+        // 수정 로직
         function openEditMode() {
-            document.getElementById('game-section').style.display = 'none'; document.getElementById('edit-section').style.display = 'block';
-            const editList = document.getElementById('edit-list'); editList.innerHTML = '';
-            currentPairs.forEach((pair, i) => {
-                const row = document.createElement('div'); row.classList.add('edit-row');
-                let displayA = pair.a.replace(/\n/g, " ");
-                row.innerHTML = `<span>${i + 1}번</span><input type="text" id="edit-q-${i}" value="${pair.q}" placeholder="문제"><input type="text" id="edit-a-${i}" value="${displayA}" placeholder="정답">`;
-                editList.appendChild(row);
+            closeVaultDoors(() => {
+                document.getElementById('game-section').style.display = 'none';
+                document.getElementById('edit-section').style.display = 'block';
+                populateEditList();
+                openVaultDoors(()=>{});
             });
         }
 
         function closeEditMode() {
-            document.getElementById('edit-section').style.display = 'none'; document.getElementById('game-section').style.display = 'block';
+            closeVaultDoors(() => {
+                document.getElementById('edit-section').style.display = 'none'; 
+                document.getElementById('game-section').style.display = 'block';
+                openVaultDoors(()=>{});
+            });
         }
 
         function saveAndStart() {
             for (let i = 0; i < 12; i++) {
-                let qVal = document.getElementById(`edit-q-${i}`).value; let aVal = document.getElementById(`edit-a-${i}`).value;
-                if(aVal.includes('또는') && !aVal.includes('\n')) { aVal = aVal.replace('또는', '\n또는\n'); }
+                let qVal = document.getElementById(`edit-q-${i}`).value;
+                let aVal = document.getElementById(`edit-a-${i}`).value;
+                if (aVal.includes('또는') && !aVal.includes('\n')) {
+                    aVal = aVal.replace('또는', '\n또는\n');
+                }
                 currentPairs[i] = { q: qVal, a: aVal };
             }
-            closeEditMode(); startGame();
+
+            closeVaultDoors(() => {
+                hideFrontControls();
+                document.getElementById('edit-section').style.display = 'none';
+                document.getElementById('treasure-room').style.display = 'none';
+                document.getElementById('game-section').style.display = 'block';
+                initGameCards();
+                openVaultDoors(()=>{});
+            });
         }
-
-        window.addEventListener('click', function initAudio() {
-            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-            window.removeEventListener('click', initAudio);
-        }, { once: true });
-
-        window.onload = startGame;
     </script>
 </body>
 </html>
