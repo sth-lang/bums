@@ -14,7 +14,6 @@
         }
         h1 { color: #1f2937; font-size: 26px; margin-bottom: 20px; font-weight: 800; }
         
-        /* === 게임 화면 스타일 === */
         #game-section { display: block; }
         
         .grid-container {
@@ -59,26 +58,21 @@
             line-height: 1.3;
         }
         
-        /* === 바깥면(처음 보이는 면) 색깔 나누기 === */
-        /* 기본 바깥면 공통 설정 (글씨 색상 등) */
+        /* 바깥면 스타일 */
         .card-front {
             color: #1f2937;
             font-size: 16px;
         }
-        
-        /* 문제 카드의 바깥면: 하늘색 */
         .card-front.question-front {
             background-color: #bae6fd;
             border: 2px solid #7dd3fc;
         }
-        
-        /* 정답 카드의 바깥면: 노란색 */
         .card-front.answer-front {
             background-color: #fef08a;
             border: 2px solid #fde047;
         }
 
-        /* === 안쪽면(뒤집었을 때 보이는 면) 스타일 === */
+        /* 안쪽면 스타일 */
         .card-back {
             background-color: white;
             color: #1f2937;
@@ -88,14 +82,14 @@
             border: 3px solid #3b82f6;
         }
         
-        /* 🟩 짝을 맞췄을 때 (초록색) */
+        /* 짝을 맞췄을 때 */
         .card.matched .card-back {
             background-color: #10b981 !important;
             color: white !important;
             border-color: #10b981 !important;
         }
 
-        /* === 문제 수정 화면 스타일 === */
+        /* 수정 화면 스타일 */
         #edit-section { 
             display: none; 
             max-width: 600px; 
@@ -154,7 +148,6 @@
 </head>
 <body>
 
-    <!-- 1. 게임 화면 -->
     <div id="game-section">
         <h1>백운중 이차방정식 카드 게임</h1>
         <div class="grid-container" id="game-board"></div>
@@ -164,7 +157,6 @@
         </div>
     </div>
 
-    <!-- 2. 문제 수정 화면 -->
     <div id="edit-section">
         <h1>문제 직접 만들기 (12쌍)</h1>
         <p class="info-text">식과 정답을 입력해보세요! 완료 후 게임이 바로 시작됩니다.</p>
@@ -174,7 +166,55 @@
     </div>
 
     <script>
-        // 기본 12쌍의 이차방정식
+        // === 효과음 발생기 (Web Audio API) ===
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+            
+            if (type === 'flip') {
+                // 카드 뒤집는 소리 (짧고 뭉툭한 소리)
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(300, now);
+                oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gainNode.gain.setValueAtTime(0.5, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                oscillator.start(now);
+                oscillator.stop(now + 0.1);
+            } 
+            else if (type === 'match') {
+                // 정답 소리 (딩동댕 - 높은 화음)
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(523.25, now); // C5
+                oscillator.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                oscillator.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                gainNode.gain.setValueAtTime(0, now);
+                gainNode.gain.linearRampToValueAtTime(0.3, now + 0.05);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.4);
+                oscillator.start(now);
+                oscillator.stop(now + 0.4);
+            } 
+            else if (type === 'wrong') {
+                // 오답 소리 (띠익- 낮은 소리)
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(150, now);
+                oscillator.frequency.linearRampToValueAtTime(100, now + 0.3);
+                gainNode.gain.setValueAtTime(0, now);
+                gainNode.gain.linearRampToValueAtTime(0.2, now + 0.05);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                oscillator.start(now);
+                oscillator.stop(now + 0.3);
+            }
+        }
+
+        // === 게임 로직 ===
         let currentPairs = [
             { q: "x² - 1 = 0", a: "x = 1\n또는\nx = -1" },
             { q: "x² - 4 = 0", a: "x = 2\n또는\nx = -2" },
@@ -196,7 +236,6 @@
         let lockBoard = false;
         let matchCount = 0;
 
-        // 게임 시작 함수
         function startGame() {
             const board = document.getElementById('game-board');
             board.innerHTML = '';
@@ -205,24 +244,18 @@
             
             let idCounter = 0;
             currentPairs.forEach((pair, index) => {
-                // 문제 카드는 'question' 타입 지정
                 cards.push({ id: idCounter++, type: index, text: pair.q, cardType: 'question' });
-                // 정답 카드는 'answer' 타입 지정
                 cards.push({ id: idCounter++, type: index, text: pair.a, cardType: 'answer' });
             });
 
-            // 카드 무작위 섞기
             cards.sort(() => 0.5 - Math.random());
 
-            // 카드 그리기
             cards.forEach((card, index) => {
                 const cardElement = document.createElement('div');
                 cardElement.classList.add('card');
                 cardElement.dataset.type = card.type;
                 
-                // cardType에 따라 바깥면(front)의 클래스를 다르게 줍니다.
                 const frontClass = card.cardType === 'question' ? 'question-front' : 'answer-front';
-                // 바깥면에 적힐 글씨
                 const frontText = card.cardType === 'question' ? `문제 ${index + 1}` : `정답 ${index + 1}`;
 
                 cardElement.innerHTML = `
@@ -237,11 +270,12 @@
             });
         }
 
-        // 카드 뒤집기 로직
         function flipCard() {
             if (lockBoard) return;
             if (this === firstCard) return;
 
+            // 카드 뒤집는 소리 재생
+            playSound('flip');
             this.classList.add('flipped');
 
             if (!firstCard) {
@@ -253,18 +287,20 @@
             checkForMatch();
         }
 
-        // 짝 맞는지 확인
         function checkForMatch() {
             let isMatch = firstCard.dataset.type === secondCard.dataset.type;
 
             if (isMatch) {
+                // 맞췄을 때 0.3초 뒤에 정답 소리 재생 (눈으로 확인하는 시간)
+                setTimeout(() => playSound('match'), 300);
                 disableCards();
             } else {
+                // 틀렸을 때 0.3초 뒤에 오답 소리 재생
+                setTimeout(() => playSound('wrong'), 300);
                 unflipCards();
             }
         }
 
-        // 맞췄을 때
         function disableCards() {
             firstCard.classList.add('matched');
             secondCard.classList.add('matched');
@@ -274,11 +310,10 @@
             
             matchCount++;
             if (matchCount === 12) {
-                setTimeout(() => alert("🎉 축하합니다! 모든 카드를 맞췄습니다!"), 500);
+                setTimeout(() => alert("🎉 축하합니다! 모든 카드를 맞췄습니다!"), 800);
             }
         }
 
-        // 틀렸을 때
         function unflipCards() {
             lockBoard = true;
             setTimeout(() => {
@@ -334,6 +369,15 @@
             closeEditMode();
             startGame();
         }
+
+        // 인터넷 브라우저 정책상, 사용자가 화면을 한 번이라도 클릭(터치)해야 소리가 날 수 있습니다.
+        // 첫 시작 시 소리 재생 권한을 얻기 위해 화면 클릭을 유도합니다.
+        window.addEventListener('click', function initAudio() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            window.removeEventListener('click', initAudio);
+        }, { once: true });
 
         window.onload = startGame;
     </script>
