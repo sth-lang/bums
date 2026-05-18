@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>백운중 이차방정식 카드 놀이</title>
+    <!-- 꽃가루 효과를 위한 외부 라이브러리 불러오기 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body { 
             font-family: 'Pretendard', -apple-system, sans-serif; 
@@ -11,6 +13,7 @@
             text-align: center; 
             padding: 20px; 
             margin: 0;
+            overflow-x: hidden;
         }
         h1 { color: #1f2937; font-size: 26px; margin-bottom: 20px; font-weight: 800; }
         
@@ -89,6 +92,32 @@
             border-color: #10b981 !important;
         }
 
+        /* === 축하 팝업 화면 스타일 === */
+        #victory-overlay {
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); 
+            z-index: 9999; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            color: white;
+        }
+        .victory-title {
+            font-size: 2.5rem; 
+            color: #fbbf24; 
+            margin-bottom: 20px; 
+            text-shadow: 0 0 15px #f59e0b;
+        }
+        .victory-gif {
+            width: 150px; 
+            height: 150px; 
+            image-rendering: pixelated; 
+            margin-bottom: 30px; 
+            border-radius: 10px;
+        }
+
         /* 수정 화면 스타일 */
         #edit-section { 
             display: none; 
@@ -148,6 +177,15 @@
 </head>
 <body>
 
+    <!-- 축하 화면 오버레이 -->
+    <div id="victory-overlay">
+        <h1 class="victory-title">🎉 완벽하게 맞췄습니다! 🎉</h1>
+        <!-- 귀여운 8비트 춤추는 캐릭터 GIF -->
+        <img class="victory-gif" src="https://media.tenor.com/97y4tL_wWvMAAAAj/pixel-dance.gif" alt="춤추는 캐릭터">
+        <button onclick="closeVictory()" style="background-color:#10b981; font-size:1.2rem; padding:15px 30px;">다시 게임하기</button>
+    </div>
+
+    <!-- 1. 게임 화면 -->
     <div id="game-section">
         <h1>백운중 이차방정식 카드 게임</h1>
         <div class="grid-container" id="game-board"></div>
@@ -157,6 +195,7 @@
         </div>
     </div>
 
+    <!-- 2. 문제 수정 화면 -->
     <div id="edit-section">
         <h1>문제 직접 만들기 (12쌍)</h1>
         <p class="info-text">식과 정답을 입력해보세요! 완료 후 게임이 바로 시작됩니다.</p>
@@ -166,7 +205,7 @@
     </div>
 
     <script>
-        // === 효과음 발생기 (Web Audio API) ===
+        // === 효과음 및 8비트 음악 발생기 (Web Audio API) ===
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         function playSound(type) {
@@ -180,7 +219,6 @@
             const now = audioCtx.currentTime;
             
             if (type === 'flip') {
-                // 카드 뒤집는 소리 (짧고 뭉툭한 소리)
                 oscillator.type = 'sine';
                 oscillator.frequency.setValueAtTime(300, now);
                 oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.1);
@@ -190,11 +228,10 @@
                 oscillator.stop(now + 0.1);
             } 
             else if (type === 'match') {
-                // 정답 소리 (딩동댕 - 높은 화음)
                 oscillator.type = 'triangle';
-                oscillator.frequency.setValueAtTime(523.25, now); // C5
-                oscillator.frequency.setValueAtTime(659.25, now + 0.1); // E5
-                oscillator.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                oscillator.frequency.setValueAtTime(523.25, now);
+                oscillator.frequency.setValueAtTime(659.25, now + 0.1);
+                oscillator.frequency.setValueAtTime(783.99, now + 0.2);
                 gainNode.gain.setValueAtTime(0, now);
                 gainNode.gain.linearRampToValueAtTime(0.3, now + 0.05);
                 gainNode.gain.linearRampToValueAtTime(0, now + 0.4);
@@ -202,7 +239,6 @@
                 oscillator.stop(now + 0.4);
             } 
             else if (type === 'wrong') {
-                // 오답 소리 (띠익- 낮은 소리)
                 oscillator.type = 'sawtooth';
                 oscillator.frequency.setValueAtTime(150, now);
                 oscillator.frequency.linearRampToValueAtTime(100, now + 0.3);
@@ -212,6 +248,59 @@
                 oscillator.start(now);
                 oscillator.stop(now + 0.3);
             }
+        }
+
+        // 🎵 고전 게임 스타일 8비트 승리 노래 재생 함수
+        function playVictorySong() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            // 승리의 아르페지오 음계
+            const notes = [
+                { f: 261.63, d: 0.12 }, // 도
+                { f: 329.63, d: 0.12 }, // 미
+                { f: 392.00, d: 0.12 }, // 솔
+                { f: 523.25, d: 0.12 }, // 높은 도
+                { f: 659.25, d: 0.12 }, // 높은 미
+                { f: 783.99, d: 0.5  }  // 높은 솔 (길게)
+            ];
+            
+            let time = audioCtx.currentTime;
+            notes.forEach(n => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.type = 'square'; // 레트로 8비트 게임 소리
+                osc.frequency.value = n.f;
+                gain.gain.setValueAtTime(0.2, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + n.d);
+                
+                osc.start(time);
+                osc.stop(time + n.d);
+                time += n.d;
+            });
+        }
+
+        // 🌸 양쪽에서 터지는 꽃가루 효과 함수
+        function shootConfetti() {
+            var duration = 3000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5, angle: 60, spread: 55, origin: { x: 0 },
+                    colors: ['#3b82f6', '#10b981', '#fef08a', '#fde047', '#f43f5e']
+                });
+                confetti({
+                    particleCount: 5, angle: 120, spread: 55, origin: { x: 1 },
+                    colors: ['#3b82f6', '#10b981', '#fef08a', '#fde047', '#f43f5e']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
         }
 
         // === 게임 로직 ===
@@ -274,7 +363,6 @@
             if (lockBoard) return;
             if (this === firstCard) return;
 
-            // 카드 뒤집는 소리 재생
             playSound('flip');
             this.classList.add('flipped');
 
@@ -291,11 +379,9 @@
             let isMatch = firstCard.dataset.type === secondCard.dataset.type;
 
             if (isMatch) {
-                // 맞췄을 때 0.3초 뒤에 정답 소리 재생 (눈으로 확인하는 시간)
                 setTimeout(() => playSound('match'), 300);
                 disableCards();
             } else {
-                // 틀렸을 때 0.3초 뒤에 오답 소리 재생
                 setTimeout(() => playSound('wrong'), 300);
                 unflipCards();
             }
@@ -310,7 +396,12 @@
             
             matchCount++;
             if (matchCount === 12) {
-                setTimeout(() => alert("🎉 축하합니다! 모든 카드를 맞췄습니다!"), 800);
+                // 모두 맞췄을 때 0.8초 뒤 축하 이벤트 실행!
+                setTimeout(() => {
+                    playVictorySong(); // 8비트 노래 재생
+                    shootConfetti();   // 꽃가루 발사
+                    document.getElementById('victory-overlay').style.display = 'flex'; // 축하 화면 표시
+                }, 800);
             }
         }
 
@@ -325,6 +416,12 @@
 
         function resetBoard() {
             [firstCard, secondCard, lockBoard] = [null, null, false];
+        }
+
+        // 축하 화면 닫고 새 게임
+        function closeVictory() {
+            document.getElementById('victory-overlay').style.display = 'none';
+            startGame();
         }
 
         // === 문제 수정 관련 로직 ===
@@ -370,8 +467,6 @@
             startGame();
         }
 
-        // 인터넷 브라우저 정책상, 사용자가 화면을 한 번이라도 클릭(터치)해야 소리가 날 수 있습니다.
-        // 첫 시작 시 소리 재생 권한을 얻기 위해 화면 클릭을 유도합니다.
         window.addEventListener('click', function initAudio() {
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
