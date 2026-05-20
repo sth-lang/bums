@@ -63,17 +63,17 @@
         #center-dial {
             position: relative;
             width: 200px; height: 200px;
-            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #93c5fd 65%, #60a5fa 100%);
+            background: radial-gradient(circle at 30% 30%, #fff7cc 0%, #facc15 45%, #dc2626 100%);
             border: 12px solid #dbeafe;
             border-radius: 50%; z-index: 9500;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; pointer-events: auto;
-            box-shadow: 0 10px 30px rgba(37,99,235,0.35), inset 0 5px 15px rgba(255,255,255,0.6);
+            box-shadow: 0 0 25px rgba(250,204,21,0.9), 0 0 50px rgba(220,38,38,0.7), inset 0 5px 15px rgba(255,255,255,0.8);
             transition: transform 1.5s ease-in-out, opacity 1s;
         }
         #center-dial:hover { filter: brightness(1.15); }
         .dial-text { font-size: 1.5rem; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin-bottom: 5px; }
-        .dial-sub { font-size: 1rem; color: #fef3c7; font-weight: bold; }
+        .dial-sub { font-size: 1rem; color: #ffffff; font-weight: bold; text-shadow:0 0 10px rgba(255,255,255,0.9); }
         #center-dial.unlocking { transform: rotate(720deg) scale(0.3); opacity: 0; pointer-events: none; }
         #front-edit-btn {
             pointer-events: auto;
@@ -172,6 +172,21 @@
         .edit-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
         .edit-row span { font-weight: bold; width: 40px; }
         .edit-row input { flex: 1; padding: 10px; font-size: 16px; border: 1px solid #d1d5db; border-radius: 6px; }
+        .math-toolbar {
+            display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+            background: #eef2ff; border: 2px solid #c7d2fe; border-radius: 12px;
+            padding: 12px; margin: 12px 0 18px;
+            position: sticky; top: 0; z-index: 5;
+        }
+        .math-toolbar-title { width: 100%; font-weight: 900; color: #3730a3; margin-bottom: 4px; }
+        .math-symbol-btn {
+            padding: 9px 13px; border: none; border-radius: 10px;
+            background: white; color: #1f2937; font-size: 18px; font-weight: 900;
+            cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.14);
+            border: 1px solid #c7d2fe;
+        }
+        .math-symbol-btn:hover { background: #dbeafe; transform: translateY(-1px); }
+        .math-helper-text { width: 100%; font-size: 13px; color: #6b7280; margin-top: 2px; }
         .btn-save { background-color: #10b981; width: 100%; margin-top: 15px;}
         .btn-cancel { background-color: #6b7280; width: 100%; margin-top: 10px;}
     </style>
@@ -185,7 +200,7 @@
 
     <div id="front-controls">
         <div id="center-dial" onclick="startVaultSequence()">
-            <span class="dial-text">금고 열기</span>
+            <span class="dial-text" style="font-size:1.25rem; text-align:center; line-height:1.3;">백운중<br>이차방정식<br>금고 열기</span>
             <span class="dial-sub">▶ 게임 시작</span>
         </div>
         <button id="front-edit-btn" onclick="openFrontEditMode()">✏️ 암호 바꾸기</button>
@@ -229,6 +244,21 @@
         <div class="edit-container">
             <h1 class="game-title">함정 암호 설계 (12쌍)</h1>
             <p style="color:#6b7280; font-size:14px; margin-bottom:20px;">암호를 만들고 기밀 금고를 새롭게 잠그세요.</p>
+            <div class="math-toolbar" aria-label="수학 기호 입력 도구">
+                <div class="math-toolbar-title">수학 기호 빠른 입력</div>
+                <button type="button" class="math-symbol-btn" onclick="insertSymbol('√')">√</button>
+                <button type="button" class="math-symbol-btn" onclick="insertSymbol('±')">±</button>
+                <button type="button" class="math-symbol-btn" onclick="insertSymbol('²')">x²</button>
+                <button type="button" class="math-symbol-btn" onclick="insertSymbol('x')">x</button>
+                <button type="button" class="math-symbol-btn" onclick="insertSymbol('(')">(</button>
+                <button type="button" class="math-symbol-btn" onclick="insertSymbol(')')">)</button>
+                <button type="button" class="math-symbol-btn" onclick="insertSymbol(' + ')">+</button>
+                <button type="button" class="math-symbol-btn" onclick="insertSymbol(' - ')">−</button>
+                <button type="button" class="math-symbol-btn" onclick="insertSymbol(' = ')">=</button>
+                <button type="button" class="math-symbol-btn" onclick="insertSymbol('또는')">또는</button>
+                <button type="button" class="math-symbol-btn" onclick="insertSymbol('x = ')">x =</button>
+                <div class="math-helper-text">입력칸을 누른 뒤 기호를 선택하세요. 예: x = 1 ± √2</div>
+            </div>
             <div id="edit-list"></div>
             <button class="action-btn btn-save" onclick="saveAndStart()">✅ 암호 저장 & 금고 잠그기</button>
             <button class="action-btn btn-cancel" onclick="closeEditMode()">취소</button>
@@ -418,6 +448,35 @@
         }
 
 
+        let activeInput = null;
+
+        function escapeAttr(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        document.addEventListener('focusin', (e) => {
+            if (e.target.tagName === 'INPUT') {
+                activeInput = e.target;
+            }
+        });
+
+        function insertSymbol(symbol) {
+            if (!activeInput) {
+                alert('먼저 암호 또는 해독키 입력칸을 눌러 주세요.');
+                return;
+            }
+
+            const start = activeInput.selectionStart ?? activeInput.value.length;
+            const end = activeInput.selectionEnd ?? activeInput.value.length;
+            activeInput.value = activeInput.value.substring(0, start) + symbol + activeInput.value.substring(end);
+            activeInput.focus();
+            activeInput.selectionStart = activeInput.selectionEnd = start + symbol.length;
+        }
+
         function populateEditList() {
             const editList = document.getElementById('edit-list');
             editList.innerHTML = '';
@@ -425,7 +484,7 @@
                 const row = document.createElement('div');
                 row.classList.add('edit-row');
                 let displayA = pair.a.replace(/\n/g, " ");
-                row.innerHTML = `<span>${i + 1}번</span><input type="text" id="edit-q-${i}" value="${pair.q}" placeholder="암호"><input type="text" id="edit-a-${i}" value="${displayA}" placeholder="해독키">`;
+                row.innerHTML = `<span>${i + 1}번</span><input type="text" id="edit-q-${i}" value="${escapeAttr(pair.q)}" placeholder="암호 예: x² - 2x - 1 = 0"><input type="text" id="edit-a-${i}" value="${escapeAttr(displayA)}" placeholder="해독키 예: x = 1 ± √2">`;
                 editList.appendChild(row);
             });
         }
