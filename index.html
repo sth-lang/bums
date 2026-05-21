@@ -149,16 +149,64 @@
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
         .victory-title { font-size: 3rem; color: #fff; margin: 10px 0; text-shadow: 0 0 20px #fbbf24, 0 0 40px #f59e0b; font-weight: 900; }
         
-        /* 룰렛 기계 */
+        /* 원판 룰렛 기계 */
         .retro-arcade {
-            background-color: rgba(17, 24, 39, 0.95); border: 6px solid #fbbf24; padding: 20px 40px;
-            margin: 20px 0; border-radius: 12px; box-shadow: 0 0 40px rgba(251, 191, 36, 0.8);
-            min-width: 280px; text-align: center;
+            background-color: rgba(17, 24, 39, 0.95); border: 6px solid #fbbf24; padding: 20px 30px 26px;
+            margin: 20px 0; border-radius: 18px; box-shadow: 0 0 40px rgba(251, 191, 36, 0.8);
+            min-width: 470px; text-align: center;
         }
         .retro-subtitle { color: #f8fafc; font-size: 1.2rem; margin-bottom: 15px; font-weight: bold; }
-        .roulette-display { font-size: 3rem; color: #39ff14; font-weight: 900; text-shadow: 0 0 20px #39ff14; margin: 10px 0; height: 60px; }
+        .wheel-wrap { position: relative; width: 360px; height: 360px; margin: 10px auto 18px; }
+        .wheel-pointer {
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 4;
+            width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 34px solid #ef4444;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.45));
+        }
+        #roulette-wheel {
+            position: absolute; inset: 0; border-radius: 50%; border: 9px solid #fde68a;
+            background: conic-gradient(
+                #fef3c7 0deg 60deg,
+                #fde68a 60deg 120deg,
+                #fef3c7 120deg 180deg,
+                #fde68a 180deg 240deg,
+                #bfdbfe 240deg 300deg,
+                #bbf7d0 300deg 360deg
+            );
+            box-shadow: 0 0 22px rgba(251, 191, 36, 0.75), inset 0 0 18px rgba(0,0,0,0.28);
+            transition: transform 5s cubic-bezier(0.12, 0.75, 0.18, 1);
+        }
+        #roulette-wheel::after {
+            content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 56px; height: 56px; border-radius: 50%; background: #111827; border: 6px solid #fbbf24;
+            box-shadow: 0 0 12px rgba(0,0,0,0.5);
+        }
+        .wheel-label {
+            position: absolute; top: 50%; left: 50%; width: 110px; margin-left: -55px; margin-top: -18px;
+            font-size: 21px; font-weight: 900; color: #111827; text-align: center; line-height: 1.1;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.75); z-index: 2; pointer-events: none;
+        }
+        .wheel-label.s0 { transform: rotate(30deg) translateY(-132px) rotate(-30deg); }
+        .wheel-label.s1 { transform: rotate(90deg) translateY(-132px) rotate(-90deg); }
+        .wheel-label.s2 { transform: rotate(150deg) translateY(-132px) rotate(-150deg); }
+        .wheel-label.s3 { transform: rotate(210deg) translateY(-132px) rotate(-210deg); }
+        .wheel-label.s4 { transform: rotate(270deg) translateY(-132px) rotate(-270deg); }
+        .wheel-label.s5 { transform: rotate(330deg) translateY(-132px) rotate(-330deg); font-size: 17px; }
+        .roulette-display { font-size: 2.4rem; color: #39ff14; font-weight: 900; text-shadow: 0 0 20px #39ff14; margin: 8px 0 0; min-height: 58px; }
         .blink { animation: blinker 0.3s linear infinite; color: #fbbf24; text-shadow: 0 0 20px #fbbf24; }
         @keyframes blinker { 50% { opacity: 0.3; } }
+
+
+        @media (max-width: 600px) {
+            .retro-arcade { min-width: 300px; padding: 16px 14px 22px; }
+            .wheel-wrap { width: 300px; height: 300px; }
+            .wheel-label { width: 96px; margin-left: -48px; font-size: 17px; }
+            .wheel-label.s0 { transform: rotate(30deg) translateY(-110px) rotate(-30deg); }
+            .wheel-label.s1 { transform: rotate(90deg) translateY(-110px) rotate(-90deg); }
+            .wheel-label.s2 { transform: rotate(150deg) translateY(-110px) rotate(-150deg); }
+            .wheel-label.s3 { transform: rotate(210deg) translateY(-110px) rotate(-210deg); }
+            .wheel-label.s4 { transform: rotate(270deg) translateY(-110px) rotate(-270deg); }
+            .wheel-label.s5 { transform: rotate(330deg) translateY(-110px) rotate(-330deg); font-size: 14px; }
+        }
 
         /* 버튼 */
         .btn-group { margin-top: 30px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; padding-bottom: 50px; }
@@ -186,7 +234,7 @@
             border: 1px solid #c7d2fe;
         }
         .math-symbol-btn:hover { background: #dbeafe; transform: translateY(-1px); }
-        .math-helper-text { width: 100%; font-size: 13px; color: #6b7280; margin-top: 2px; }
+        .math-helper-text { width: 100%; font-size: 17px; color: #6b7280; margin-top: 2px; }
         .btn-save { background-color: #10b981; width: 100%; margin-top: 15px;}
         .btn-cancel { background-color: #6b7280; width: 100%; margin-top: 10px;}
     </style>
@@ -223,8 +271,19 @@
             <h1 class="victory-title">보물창고 개방 성공!</h1>
             
             <div class="retro-arcade">
-                <div class="retro-subtitle" id="roulette-msg">오늘 요원들의 보상 사탕은?</div>
-                <div class="roulette-display" id="roulette-display">???</div>
+                <div class="retro-subtitle" id="roulette-msg">🎰 오늘의 사탕 배수 보상은?</div>
+                <div class="wheel-wrap">
+                    <div class="wheel-pointer"></div>
+                    <div id="roulette-wheel">
+                        <span class="wheel-label s0">🍬<br>1배</span>
+                        <span class="wheel-label s1">🍬<br>1배</span>
+                        <span class="wheel-label s2">🍬<br>1배</span>
+                        <span class="wheel-label s3">🍬<br>1배</span>
+                        <span class="wheel-label s4">🍭<br>2배</span>
+                        <span class="wheel-label s5">🤝<br>다른 조도<br>함께</span>
+                    </div>
+                </div>
+                <div class="roulette-display" id="roulette-display">READY</div>
             </div>
 
             <button class="action-btn" style="background-color:#10b981; font-size:1.2rem; padding:15px 40px;" onclick="resetToBeginning()">다시 금고 잠그기</button>
@@ -248,6 +307,8 @@
                 <div class="math-toolbar-title">수학 기호 빠른 입력</div>
                 <button type="button" class="math-symbol-btn" onclick="insertSymbol('√')">√</button>
                 <button type="button" class="math-symbol-btn" onclick="insertSymbol('±')">±</button>
+                <button type="button" class="math-symbol-btn" onclick="insertFraction()">분수</button>
+                <button type="button" class="math-symbol-btn" onclick="insertSymbol('/')">/</button>
                 <button type="button" class="math-symbol-btn" onclick="insertSymbol('²')">x²</button>
                 <button type="button" class="math-symbol-btn" onclick="insertSymbol('x')">x</button>
                 <button type="button" class="math-symbol-btn" onclick="insertSymbol('(')">(</button>
@@ -257,7 +318,7 @@
                 <button type="button" class="math-symbol-btn" onclick="insertSymbol(' = ')">=</button>
                 <button type="button" class="math-symbol-btn" onclick="insertSymbol('또는')">또는</button>
                 <button type="button" class="math-symbol-btn" onclick="insertSymbol('x = ')">x =</button>
-                <div class="math-helper-text">입력칸을 누른 뒤 기호를 선택하세요. 예: x = 1 ± √2</div>
+                <div class="math-helper-text">입력칸을 누른 뒤 기호를 선택하세요. 예: x = 1 ± √2, x = 1/2</div>
             </div>
             <div id="edit-list"></div>
             <button class="action-btn btn-save" onclick="saveAndStart()">✅ 암호 저장 & 금고 잠그기</button>
@@ -477,6 +538,21 @@
             activeInput.selectionStart = activeInput.selectionEnd = start + symbol.length;
         }
 
+        function insertFraction() {
+            if (!activeInput) {
+                alert('먼저 암호 또는 해독키 입력칸을 눌러 주세요.');
+                return;
+            }
+
+            const start = activeInput.selectionStart ?? activeInput.value.length;
+            const end = activeInput.selectionEnd ?? activeInput.value.length;
+            const template = '()/()';
+            activeInput.value = activeInput.value.substring(0, start) + template + activeInput.value.substring(end);
+            activeInput.focus();
+            // 분자 괄호 안으로 커서를 이동시켜 바로 입력할 수 있게 함
+            activeInput.selectionStart = activeInput.selectionEnd = start + 1;
+        }
+
         function populateEditList() {
             const editList = document.getElementById('edit-list');
             editList.innerHTML = '';
@@ -484,7 +560,7 @@
                 const row = document.createElement('div');
                 row.classList.add('edit-row');
                 let displayA = pair.a.replace(/\n/g, " ");
-                row.innerHTML = `<span>${i + 1}번</span><input type="text" id="edit-q-${i}" value="${escapeAttr(pair.q)}" placeholder="암호 예: x² - 2x - 1 = 0"><input type="text" id="edit-a-${i}" value="${escapeAttr(displayA)}" placeholder="해독키 예: x = 1 ± √2">`;
+                row.innerHTML = `<span>${i + 1}번</span><input type="text" id="edit-q-${i}" value="${escapeAttr(pair.q)}" placeholder="암호 예: x² - 2x - 1 = 0"><input type="text" id="edit-a-${i}" value="${escapeAttr(displayA)}" placeholder="해독키 예: x = 1 ± √2, x = 1/2">`;
                 editList.appendChild(row);
             });
         }
@@ -643,34 +719,69 @@
 
         function unflipCards() {
             lockBoard = true;
+            // 틀린 두 카드를 1.5초 동안 보여준 뒤 되돌립니다.
             setTimeout(() => {
-                firstCard.classList.remove('flipped'); secondCard.classList.remove('flipped');
+                if (firstCard && secondCard) {
+                    firstCard.classList.remove('flipped');
+                    secondCard.classList.remove('flipped');
+                }
                 [firstCard, secondCard, lockBoard] = [null, null, false];
-            }, 1000);
+            }, 1500);
         }
 
-        // 룰렛
-        const candyFlavors = ['🍫 초코 맛', '🍓 딸기 맛', '🥛 딸기우유 맛', '🍋 라임 맛', '🍇 포도 맛', '🥤 콜라 맛', '🍊 오렌지 맛'];
+        // 사탕 배수 원판 룰렛
+        const rewardRoulette = [
+            { label: '🍬 사탕 1배', index: 0 },
+            { label: '🍬 사탕 1배', index: 1 },
+            { label: '🍬 사탕 1배', index: 2 },
+            { label: '🍬 사탕 1배', index: 3 },
+            { label: '🍭 사탕 2배', index: 4 },
+            { label: '🤝 다른 조도 함께 받기', index: 5 }
+        ];
+        let rouletteRotation = 0;
+
         function startRoulette() {
             const display = document.getElementById('roulette-display');
             const msg = document.getElementById('roulette-msg');
-            display.classList.remove('blink'); msg.innerText = "금고 속 보상 룰렛이 돌아갑니다...!";
-            
-            let ticks = 0; const maxTicks = 45; let speed = 50;
-            function spin() {
-                display.innerText = candyFlavors[Math.floor(Math.random() * candyFlavors.length)];
+            const wheel = document.getElementById('roulette-wheel');
+            if (!wheel) return;
+
+            display.classList.remove('blink');
+            display.innerText = 'SPIN!';
+            msg.innerText = '금고 속 사탕 배수 룰렛이 돌아갑니다...!';
+
+            const selected = rewardRoulette[Math.floor(Math.random() * rewardRoulette.length)];
+            const segmentSize = 360 / 6;
+            const segmentCenter = selected.index * segmentSize + segmentSize / 2;
+            const extraTurns = 10 + Math.floor(Math.random() * 4);
+            const targetRotation = rouletteRotation + (extraTurns * 360) + (360 - segmentCenter);
+            rouletteRotation = targetRotation;
+
+            wheel.style.transition = 'transform 8s cubic-bezier(0.08, 0.72, 0.12, 1)';
+            wheel.style.transform = `rotate(${targetRotation}deg)`;
+
+            let ticks = 0;
+            const tickTimer = setInterval(() => {
                 playSound('tick');
                 ticks++;
-                if (ticks < maxTicks) {
-                    if (ticks > maxTicks * 0.6) speed += 15;
-                    setTimeout(spin, speed);
+                if (ticks > 68) clearInterval(tickTimer);
+            }, 105);
+
+            setTimeout(() => {
+                clearInterval(tickTimer);
+                playSound('tada');
+                display.innerText = selected.label;
+                display.classList.add('blink');
+                if (selected.index === 4) {
+                    msg.innerText = '✨ 2배 보상 당첨! 요원들에게 사탕을 2배 지급하세요! ✨';
+                    shootConfetti();
+                } else if (selected.index === 5) {
+                    msg.innerText = '🤝 협력 보너스 발동! 다른 조도 함께 보상을 받습니다!';
+                    shootConfetti();
                 } else {
-                    playSound('tada');
-                    msg.innerText = "✨ 당첨! 요원들에게 보상을 지급하세요! ✨";
-                    display.classList.add('blink');
+                    msg.innerText = '✨ 보상 지급 결과: 사탕 1배! ✨';
                 }
-            }
-            setTimeout(spin, speed);
+            }, 8300);
         }
 
         function resetToBeginning() {
