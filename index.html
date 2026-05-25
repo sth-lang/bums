@@ -347,6 +347,294 @@
             }
         }
 
+
+        .result-check-wrap {
+            display: none;
+            margin: 18px auto 0;
+            padding-bottom: 20px;
+        }
+        .result-check-btn {
+            background: linear-gradient(135deg, #dc2626, #f59e0b, #facc15);
+            color: white;
+            border: 4px solid #fff7ed;
+            border-radius: 999px;
+            padding: 18px 42px;
+            font-size: 26px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 0 24px rgba(245, 158, 11, 0.75), 0 8px 18px rgba(0,0,0,0.25);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.45);
+            animation: pulseResult 1s infinite alternate;
+        }
+        @keyframes pulseResult {
+            from { transform: scale(1); filter: brightness(1); }
+            to { transform: scale(1.04); filter: brightness(1.12); }
+        }
+        .winner-banner {
+            background: linear-gradient(135deg, #fef3c7, #facc15);
+            color: #78350f;
+            border: 4px solid #fff7ed;
+            border-radius: 18px;
+            padding: 12px 18px;
+            margin: 8px 0 14px;
+            font-size: 1.7rem;
+            font-weight: 900;
+            box-shadow: 0 0 22px rgba(251, 191, 36, 0.65);
+        }
+        .ladder-box {
+            display: none;
+            margin-top: 14px;
+            background: rgba(255,255,255,0.12);
+            border: 3px solid rgba(255,255,255,0.45);
+            border-radius: 16px;
+            padding: 14px;
+        }
+        .ladder-title {
+            color: #fef3c7;
+            font-size: 1.15rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        .ladder-top-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .ladder-choice-btn {
+            border: none;
+            border-radius: 12px;
+            padding: 12px 0;
+            background: #facc15;
+            color: #78350f;
+            font-size: 20px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.28);
+        }
+        .ladder-choice-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .ladder-choice-btn.picked {
+            background: #22c55e;
+            color: white;
+        }
+        .ladder-cover {
+            height: 190px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: repeating-linear-gradient(45deg, #111827, #111827 12px, #1f2937 12px, #1f2937 24px);
+            color: #fef3c7;
+            border: 3px dashed #facc15;
+            border-radius: 14px;
+            font-size: 1.25rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        .ladder-area {
+            display: none;
+            height: 190px;
+            position: relative;
+            background: #fff7ed;
+            border: 3px solid #f59e0b;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .ladder-line {
+            position: absolute;
+            top: 12px;
+            bottom: 12px;
+            width: 5px;
+            background: #1f2937;
+            border-radius: 999px;
+        }
+        .ladder-bridge {
+            position: absolute;
+            height: 5px;
+            background: #1f2937;
+            border-radius: 999px;
+        }
+        .ladder-token {
+            position: absolute;
+            top: 2px;
+            width: 30px;
+            height: 30px;
+            transform: translateX(-50%);
+            border-radius: 50%;
+            background: #ef4444;
+            color: white;
+            font-weight: 900;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(239,68,68,0.8);
+            z-index: 3;
+        }
+        .ladder-bottom {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+        .ladder-result-cell {
+            background: #111827;
+            color: white;
+            border-radius: 12px;
+            padding: 10px 0;
+            font-weight: 900;
+            font-size: 15px;
+        }
+        .ladder-final {
+            min-height: 30px;
+            margin-top: 10px;
+            color: #39ff14;
+            text-shadow: 0 0 16px #39ff14;
+            font-size: 1.35rem;
+            font-weight: 900;
+        }
+
+
+        .ladder-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 12000;
+            background: rgba(0,0,0,0.72);
+            align-items: center;
+            justify-content: center;
+        }
+        .ladder-modal {
+            width: min(900px, 94vw);
+            background: #111827;
+            border: 6px solid #facc15;
+            border-radius: 24px;
+            padding: 22px;
+            box-shadow: 0 0 50px rgba(250, 204, 21, 0.9);
+            color: white;
+            text-align: center;
+        }
+        .ladder-modal-title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #fef3c7;
+            margin-bottom: 12px;
+            text-shadow: 0 0 18px rgba(250,204,21,0.8);
+        }
+        .ladder-close-btn {
+            float: right;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-weight: 900;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .ladder-modal .ladder-top-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin: 12px 0 10px;
+        }
+        .ladder-modal .ladder-choice-btn {
+            border: none;
+            border-radius: 14px;
+            padding: 16px 0;
+            background: #facc15;
+            color: #78350f;
+            font-size: 28px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+        }
+        .ladder-modal .ladder-choice-btn.picked {
+            background: #22c55e;
+            color: white;
+        }
+        .big-ladder-area {
+            position: relative;
+            height: 430px;
+            background: #fff7ed;
+            border: 4px solid #f59e0b;
+            border-radius: 18px;
+            overflow: hidden;
+            margin: 10px auto;
+        }
+        .big-ladder-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .big-ladder-line {
+            stroke: #111827;
+            stroke-width: 4;
+            stroke-linecap: round;
+        }
+        .big-ladder-path-highlight {
+            fill: none;
+            stroke: #ef4444;
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 9999;
+            stroke-dashoffset: 9999;
+            filter: drop-shadow(0 0 8px rgba(239,68,68,0.7));
+            transition: stroke-dashoffset 3.2s ease-in-out;
+        }
+        .big-ladder-cover {
+            position: absolute;
+            inset: 0;
+            z-index: 6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: repeating-linear-gradient(45deg, #111827, #111827 16px, #1f2937 16px, #1f2937 32px);
+            color: #fef3c7;
+            font-size: 2rem;
+            font-weight: 900;
+            text-shadow: 0 0 18px rgba(250,204,21,0.9);
+        }
+        .ladder-runner {
+            position: absolute;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: white;
+            font-weight: 900;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transform: translate(-50%, -50%);
+            z-index: 4;
+            box-shadow: 0 0 18px rgba(239,68,68,0.9);
+            font-size: 22px;
+        }
+        .ladder-bottom-big {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .ladder-result-cell.big {
+            background: #1f2937;
+            color: white;
+            border: 3px solid #facc15;
+            border-radius: 14px;
+            padding: 14px 0;
+            font-weight: 900;
+            font-size: 22px;
+        }
+        .ladder-final-big {
+            min-height: 44px;
+            margin-top: 12px;
+            color: #39ff14;
+            text-shadow: 0 0 18px #39ff14;
+            font-size: 1.7rem;
+            font-weight: 900;
+        }
+
         /* 수정 화면 */
         #edit-section { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: #f3f4f6; overflow-y: auto; padding: 20px; z-index: 8500; box-sizing: border-box; }
         .edit-container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -418,7 +706,23 @@
                 </div>
                 <div class="roulette-display" id="roulette-display">READY</div>
                 <div id="partner-team-display"></div>
-                <button class="partner-pick-btn" type="button" onclick="pickPartnerTeam(true)">🤝 함께 받을 조 뽑기</button>
+                <button class="partner-pick-btn" type="button" onclick="openLadderModal(true)">🪜 사다리타기 확인</button>
+                <div class="ladder-box" id="ladder-box">
+                    <div class="ladder-title">숫자 하나를 선택하면 사다리가 공개됩니다!</div>
+                    <div class="ladder-top-buttons" id="ladder-top-buttons">
+                        <button class="ladder-choice-btn" type="button" onclick="revealLadder(1)">1</button>
+                        <button class="ladder-choice-btn" type="button" onclick="revealLadder(2)">2</button>
+                        <button class="ladder-choice-btn" type="button" onclick="revealLadder(3)">3</button>
+                        <button class="ladder-choice-btn" type="button" onclick="revealLadder(4)">4</button>
+                        <button class="ladder-choice-btn" type="button" onclick="revealLadder(5)">5</button>
+                    </div>
+                    <div class="ladder-cover" id="ladder-cover">🔒 사다리 숨김</div>
+                    <div class="ladder-area" id="ladder-area">
+                        <div class="ladder-token" id="ladder-token">★</div>
+                    </div>
+                    <div class="ladder-bottom" id="ladder-bottom"></div>
+                    <div class="ladder-final" id="ladder-final"></div>
+                </div>
             </div>
 
             <button class="action-btn" style="background-color:#10b981; font-size:1.2rem; padding:15px 40px;" onclick="resetToBeginning()">다시 금고 잠그기</button>
@@ -426,7 +730,7 @@
     </div>
 
     <div id="game-section">
-        <h1 class="game-title">🔐 이차방정식 금고 해독 (듀얼 키 매칭)</h1>
+        <h1 class="game-title">🔐 이차방정식 금고 해독 (이차방정식과 해 매칭)</h1>
         <div class="play-layout">
             <div class="grid-container" id="game-board"></div>
             <div class="score-panel">
@@ -434,6 +738,9 @@
                 <div class="team-score-grid" id="team-score-grid"></div>
                 <button class="score-reset" type="button" onclick="resetTeamScores()">초기화</button>
             </div>
+        </div>
+        <div class="result-check-wrap" id="result-check-wrap">
+            <button class="result-check-btn" type="button" onclick="showFinalResult()">🏆 결과 확인</button>
         </div>
         <div class="btn-group">
             <button class="action-btn btn-primary" onclick="shuffleAgain()">새 게임 (섞기)</button>
@@ -733,6 +1040,8 @@
         function startVaultSequence() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
+            renderTeamScores();
+
             hideFrontControls();
             playVaultOpenSound();
 
@@ -789,8 +1098,11 @@
         let cards = []; let firstCard = null; let secondCard = null; let lockBoard = false; let matchCount = 0;
 
         function initGameCards() {
+            renderTeamScores();
             const board = document.getElementById('game-board'); board.innerHTML = '';
             cards = []; matchCount = 0; lockBoard = false; firstCard = null; secondCard = null;
+            const resultWrap = document.getElementById('result-check-wrap');
+            if (resultWrap) resultWrap.style.display = 'none';
             
             let idCounter = 0;
             currentPairs.forEach((pair, index) => {
@@ -803,7 +1115,7 @@
                 const cardElement = document.createElement('div');
                 cardElement.classList.add('card'); cardElement.dataset.type = card.type;
                 const frontClass = card.cardType === 'question' ? 'question-front' : 'answer-front';
-                const frontText = card.cardType === 'question' ? `암호 ${index + 1}` : `해독키 ${index + 1}`;
+                const frontText = card.cardType === 'question' ? `이차방정식 ${index + 1}` : `해 ${index + 1}`;
                 cardElement.innerHTML = `
                     <div class="card-inner">
                         <div class="card-face card-front ${frontClass}">${frontText}</div>
@@ -846,16 +1158,13 @@
             
             if (matchCount === 12) {
                 setTimeout(() => {
-                    closeVaultDoors(() => {
-                        document.getElementById('game-section').style.display = 'none';
-                        document.getElementById('treasure-room').style.display = 'flex';
-                        openVaultDoors(() => {
-                            playVictorySong(); 
-                            shootConfetti();   
-                            startRoulette();
-                        });
-                    });
-                }, 800);
+                    const resultWrap = document.getElementById('result-check-wrap');
+                    if (resultWrap) {
+                        resultWrap.style.display = 'block';
+                        resultWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    playSound('tada');
+                }, 500);
             }
         }
 
@@ -917,6 +1226,371 @@
             return pickedTeam;
         }
 
+
+        function getWinningTeams() {
+            const maxScore = Math.max(...teamScores);
+            const winners = [];
+            teamScores.forEach((score, index) => {
+                if (score === maxScore) winners.push(index + 1);
+            });
+            return { maxScore, winners };
+        }
+
+        function updateWinnerBanner() {
+            const banner = document.getElementById('winner-banner');
+            if (!banner) return;
+            const { maxScore, winners } = getWinningTeams();
+            if (maxScore <= 0) {
+                banner.innerText = '🏆 우승 조: 아직 점수가 없습니다';
+            } else if (winners.length === 1) {
+                banner.innerText = `🏆 우승 조: ${winners[0]}조 (${maxScore}점)`;
+            } else {
+                banner.innerText = `🏆 공동 우승: ${winners.join(', ')}조 (${maxScore}점)`;
+            }
+        }
+
+        function showFinalResult() {
+            const gameSection = document.getElementById('game-section');
+            const treasureRoom = document.getElementById('treasure-room');
+            const resultWrap = document.getElementById('result-check-wrap');
+
+            if (resultWrap) resultWrap.style.display = 'none';
+            if (gameSection) gameSection.style.display = 'none';
+            if (treasureRoom) treasureRoom.style.display = 'flex';
+
+            document.getElementById('door-left').classList.add('open');
+            document.getElementById('door-right').classList.add('open');
+
+            updateWinnerBanner();
+            resetLadderGame();
+
+            playVictorySong();
+            shootConfetti();
+            startRoulette();
+        }
+
+
+        const ladderXs = [10, 30, 50, 70, 90];
+        const ladderBridges = [
+            {a:0, b:1, y:14}, {a:2, b:3, y:20}, {a:1, b:2, y:31},
+            {a:3, b:4, y:39}, {a:0, b:1, y:52}, {a:2, b:3, y:61},
+            {a:1, b:2, y:72}, {a:3, b:4, y:82}
+        ];
+
+        function openLadderModal(manual = false) {
+            resetLadderGame();
+            const overlay = document.getElementById('ladder-modal-overlay');
+            const svg = document.getElementById('big-ladder-svg');
+            const runner = document.getElementById('ladder-runner');
+            const cover = document.getElementById('big-ladder-cover');
+
+            if (overlay) overlay.style.display = 'flex';
+            if (svg) svg.innerHTML = '';
+            if (runner) runner.style.display = 'none';
+            if (cover) cover.style.display = 'flex';
+
+            if (manual) playSound('tick');
+        }
+
+        function closeLadderModal() {
+            const overlay = document.getElementById('ladder-modal-overlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function drawBigLadder() {
+            const svg = document.getElementById('big-ladder-svg');
+            const bottom = document.getElementById('big-ladder-bottom');
+            const finalText = document.getElementById('big-ladder-final');
+            const runner = document.getElementById('ladder-runner');
+            const buttons = document.querySelectorAll('#big-ladder-top-buttons .ladder-choice-btn');
+
+            if (!svg || !bottom) return;
+
+            svg.innerHTML = '';
+            buttons.forEach(btn => btn.classList.remove('picked'));
+            if (finalText) finalText.innerText = '';
+            if (runner) runner.style.display = 'none';
+
+            ladderXs.forEach(x => {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x);
+                line.setAttribute('y1', 4);
+                line.setAttribute('x2', x);
+                line.setAttribute('y2', 96);
+                line.setAttribute('class', 'big-ladder-line');
+                svg.appendChild(line);
+            });
+
+            ladderBridges.forEach(({a,b,y}) => {
+                const bridge = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                bridge.setAttribute('x1', ladderXs[a]);
+                bridge.setAttribute('y1', y);
+                bridge.setAttribute('x2', ladderXs[b]);
+                bridge.setAttribute('y2', y);
+                bridge.setAttribute('class', 'big-ladder-line');
+                svg.appendChild(bridge);
+            });
+
+            bottom.innerHTML = ladderResults.map(result => 
+                `<div class="ladder-result-cell big">${result}</div>`
+            ).join('');
+        }
+
+        function calculateLadderPath(startIndex) {
+            let col = startIndex;
+            let y = 4;
+            const points = [{x: ladderXs[col], y}];
+
+            const sorted = [...ladderBridges].sort((p, q) => p.y - q.y);
+
+            sorted.forEach(bridge => {
+                const usesBridge = bridge.a === col || bridge.b === col;
+                if (!usesBridge) return;
+
+                points.push({x: ladderXs[col], y: bridge.y});
+                col = bridge.a === col ? bridge.b : bridge.a;
+                points.push({x: ladderXs[col], y: bridge.y});
+                y = bridge.y;
+            });
+
+            points.push({x: ladderXs[col], y: 96});
+            return { points, endIndex: col };
+        }
+
+        function makeSvgPath(points) {
+            return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+        }
+
+        function animateRunner(points, duration = 3200) {
+            const runner = document.getElementById('ladder-runner');
+            const area = document.getElementById('big-ladder-area');
+            if (!runner || !area) return;
+
+            runner.style.display = 'flex';
+            const startTime = performance.now();
+            const segments = [];
+
+            for (let i = 0; i < points.length - 1; i++) {
+                const a = points[i], b = points[i + 1];
+                const len = Math.hypot(b.x - a.x, b.y - a.y);
+                segments.push({a, b, len});
+            }
+
+            const totalLen = segments.reduce((sum, s) => sum + s.len, 0);
+
+            function step(now) {
+                const t = Math.min(1, (now - startTime) / duration);
+                let distance = t * totalLen;
+
+                let current = segments[segments.length - 1];
+                for (const seg of segments) {
+                    if (distance <= seg.len) {
+                        current = seg;
+                        break;
+                    }
+                    distance -= seg.len;
+                }
+
+                const ratio = current.len === 0 ? 0 : distance / current.len;
+                const x = current.a.x + (current.b.x - current.a.x) * ratio;
+                const y = current.a.y + (current.b.y - current.a.y) * ratio;
+
+                runner.style.left = `${x}%`;
+                runner.style.top = `${y}%`;
+
+                if (t < 1) requestAnimationFrame(step);
+            }
+
+            requestAnimationFrame(step);
+        }
+
+        function runBigLadder(choice) {
+            const svg = document.getElementById('big-ladder-svg');
+            const finalText = document.getElementById('big-ladder-final');
+            const partnerDisplay = document.getElementById('partner-team-display');
+            const buttons = document.querySelectorAll('#big-ladder-top-buttons .ladder-choice-btn');
+            const cover = document.getElementById('big-ladder-cover');
+            if (!svg) return;
+
+            if (cover) cover.style.display = 'none';
+            drawBigLadder();
+            buttons.forEach((btn, idx) => {
+                if (idx + 1 === choice) btn.classList.add('picked');
+            });
+
+            const { points, endIndex } = calculateLadderPath(choice - 1);
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', makeSvgPath(points));
+            path.setAttribute('class', 'big-ladder-path-highlight');
+            svg.appendChild(path);
+
+            const length = path.getTotalLength();
+            path.style.transition = 'none';
+            path.style.strokeDasharray = length;
+            path.style.strokeDashoffset = length;
+            path.getBoundingClientRect();
+
+            setTimeout(() => {
+                path.style.transition = 'stroke-dashoffset 3.2s ease-in-out';
+                path.style.strokeDashoffset = 0;
+                animateRunner(points, 3200);
+            }, 80);
+
+            setTimeout(() => {
+                const result = ladderResults[endIndex];
+
+                if (result === '당첨') {
+                    const partnerTeam = pickPartnerTeam(false);
+                    if (finalText) finalText.innerText = `🎉 ${choice}번 → 당첨! ${partnerTeam}조도 함께 받습니다!`;
+                    if (partnerDisplay) partnerDisplay.innerText = `🤝 함께 받을 조: ${partnerTeam}조`;
+                    shootConfetti();
+                    playSound('tada');
+                } else {
+                    if (finalText) finalText.innerText = `😅 ${choice}번 → 꽝!`;
+                    playSound('wrong');
+                }
+            }, 3400);
+        }
+
+        let ladderResults = [];
+        let ladderAnswerIndex = 0;
+        let ladderChosen = false;
+        let openedChoices = [];
+
+        function resetLadderGame() {
+            ladderChosen = false;
+            openedChoices = [];
+            const box = document.getElementById('ladder-box');
+            const cover = document.getElementById('ladder-cover');
+            const area = document.getElementById('ladder-area');
+            const bottom = document.getElementById('ladder-bottom');
+            const finalText = document.getElementById('ladder-final');
+            const token = document.getElementById('ladder-token');
+            const buttons = document.querySelectorAll('.ladder-choice-btn');
+
+            if (box) box.style.display = 'none';
+            if (cover) cover.style.display = 'flex';
+            if (area) {
+                area.style.display = 'none';
+                area.innerHTML = '<div class="ladder-token" id="ladder-token">★</div>';
+            }
+            if (finalText) finalText.innerText = '';
+            if (token) token.style.display = 'none';
+            buttons.forEach(btn => btn.classList.remove('picked'));
+
+            ladderResults = ['꽝', '꽝', '꽝', '꽝', '당첨'];
+            ladderResults.sort(() => Math.random() - 0.5);
+            ladderAnswerIndex = ladderResults.indexOf('당첨');
+
+            if (bottom) {
+                bottom.innerHTML = ladderResults.map(result => 
+                    `<div class="ladder-result-cell">${result}</div>`
+                ).join('');
+            }
+            const bigBottom = document.getElementById('big-ladder-bottom');
+            const bigSvg = document.getElementById('big-ladder-svg');
+            const bigCover = document.getElementById('big-ladder-cover');
+            const bigRunner = document.getElementById('ladder-runner');
+            const bigFinal = document.getElementById('big-ladder-final');
+            const bigButtons = document.querySelectorAll('#big-ladder-top-buttons .ladder-choice-btn');
+
+            if (bigBottom) {
+                bigBottom.innerHTML = ladderResults.map(result => 
+                    `<div class="ladder-result-cell big">${result}</div>`
+                ).join('');
+            }
+            if (bigSvg) bigSvg.innerHTML = '';
+            if (bigCover) bigCover.style.display = 'flex';
+            if (bigRunner) bigRunner.style.display = 'none';
+            if (bigFinal) bigFinal.innerText = '';
+            bigButtons.forEach(btn => btn.classList.remove('picked'));
+        }
+
+        function showLadderGame(manual = false) {
+            openLadderModal(manual);
+        }
+
+        function drawLadderLines() {
+            const area = document.getElementById('ladder-area');
+            if (!area) return;
+            area.innerHTML = '<div class="ladder-token" id="ladder-token">★</div>';
+
+            const xs = [10, 30, 50, 70, 90];
+            xs.forEach(x => {
+                const line = document.createElement('div');
+                line.className = 'ladder-line';
+                line.style.left = `${x}%`;
+                area.appendChild(line);
+            });
+
+            const bridges = [
+                [0, 1, 22], [2, 3, 28], [1, 2, 48], [3, 4, 56], [0, 1, 75], [2, 3, 82]
+            ];
+            bridges.forEach(([a, b, y]) => {
+                const bridge = document.createElement('div');
+                bridge.className = 'ladder-bridge';
+                bridge.style.left = `${xs[a]}%`;
+                bridge.style.top = `${y}%`;
+                bridge.style.width = `${xs[b] - xs[a]}%`;
+                area.appendChild(bridge);
+            });
+        }
+
+        function revealLadder(choice) {
+            const buttons = document.querySelectorAll('.ladder-choice-btn');
+            const cover = document.getElementById('ladder-cover');
+            const area = document.getElementById('ladder-area');
+            const finalText = document.getElementById('ladder-final');
+            const partnerDisplay = document.getElementById('partner-team-display');
+
+            if (openedChoices.includes(choice)) return;
+            openedChoices.push(choice);
+
+            buttons.forEach((btn, idx) => {
+                if (idx + 1 === choice) btn.classList.add('picked');
+            });
+
+            if (cover) cover.style.display = 'none';
+            if (area) area.style.display = 'block';
+            drawLadderLines();
+
+            const token = document.getElementById('ladder-token');
+            const xs = [10, 30, 50, 70, 90];
+
+            if (token) {
+                token.style.left = `${xs[choice - 1]}%`;
+                token.style.display = 'flex';
+            }
+
+            setTimeout(() => {
+                const result = ladderResults[choice - 1];
+
+                if (result === '당첨') {
+                    const partnerTeam = pickPartnerTeam(false);
+
+                    if (finalText) {
+                        finalText.innerText = `🎉 ${choice}번 당첨! ${partnerTeam}조도 함께 받습니다!`;
+                    }
+
+                    if (partnerDisplay) {
+                        partnerDisplay.innerText = `🤝 함께 받을 조: ${partnerTeam}조`;
+                    }
+
+                    shootConfetti();
+                    playSound('tada');
+
+                } else {
+
+                    if (finalText) {
+                        finalText.innerText = `😅 ${choice}번은 꽝!`;
+                    }
+
+                    playSound('wrong');
+                }
+
+            }, 400);
+        }
+
         // 사탕 배수 원판 룰렛
         const rewardRoulette = [
             { label: '🍬 사탕 1배', index: 0 },
@@ -966,9 +1640,9 @@
                     msg.innerText = '✨ 2배 보상 당첨! 요원들에게 사탕을 2배 지급하세요! ✨';
                     shootConfetti();
                 } else if (selected.index === 5) {
-                    const partnerTeam = pickPartnerTeam(false);
-                    display.innerText = `${selected.label} (${partnerTeam}조)`;
-                    msg.innerText = `🤝 협력 보너스 발동! ${partnerTeam}조도 함께 보상을 받습니다!`;
+                    display.innerText = selected.label;
+                    msg.innerText = '🤝 협력 보너스 발동! 사다리타기로 함께 받을 조를 결정하세요!';
+                    showLadderGame(false);
                     shootConfetti();
                 } else {
                     msg.innerText = '✨ 보상 지급 결과: 사탕 1배! ✨';
@@ -998,6 +1672,14 @@
             closeVaultDoors(() => {
                 document.getElementById('edit-section').style.display = 'none'; 
                 document.getElementById('game-section').style.display = 'block';
+
+                const board = document.getElementById('game-board');
+                if (board && board.children.length === 0) {
+                    initGameCards();
+                } else {
+                    renderTeamScores();
+                }
+
                 openVaultDoors(()=>{});
             });
         }
@@ -1022,7 +1704,33 @@
             });
         }
 
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTeamScores();
+        });
         renderTeamScores();
     </script>
+
+    <div class="ladder-modal-overlay" id="ladder-modal-overlay">
+        <div class="ladder-modal">
+            <button class="ladder-close-btn" type="button" onclick="closeLadderModal()">닫기</button>
+            <div class="ladder-modal-title">🪜 함께 받을 조 사다리타기</div>
+            <div style="color:#fef3c7; font-weight:900; margin-bottom:8px;">1~5 중 하나를 누르면 빨간 길을 따라 결과까지 이동합니다.</div>
+            <div class="ladder-top-buttons" id="big-ladder-top-buttons">
+                <button class="ladder-choice-btn" type="button" onclick="runBigLadder(1)">1</button>
+                <button class="ladder-choice-btn" type="button" onclick="runBigLadder(2)">2</button>
+                <button class="ladder-choice-btn" type="button" onclick="runBigLadder(3)">3</button>
+                <button class="ladder-choice-btn" type="button" onclick="runBigLadder(4)">4</button>
+                <button class="ladder-choice-btn" type="button" onclick="runBigLadder(5)">5</button>
+            </div>
+            <div class="big-ladder-area" id="big-ladder-area">
+                <svg class="big-ladder-svg" id="big-ladder-svg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+                <div class="ladder-runner" id="ladder-runner">★</div>
+                <div class="big-ladder-cover" id="big-ladder-cover">🔒 사다리 숨김</div>
+            </div>
+            <div class="ladder-bottom-big" id="big-ladder-bottom"></div>
+            <div class="ladder-final-big" id="big-ladder-final"></div>
+        </div>
+    </div>
+
 </body>
 </html>
